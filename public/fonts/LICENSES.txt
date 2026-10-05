@@ -1,0 +1,11 @@
+Amiri-Bold.ttf
+
+Copyright 2010-2022 The Amiri Project Authors (https://github.com/aliftype/amiri).
+
+This Font Software is licensed under the SIL Open Font License, Version 1.1. This license is available with a FAQ at: https://scripts.sil.org/OFL
+
+https://scripts.sil.org/OFL
+
+NotoSansArabic-Regular.ttf
+
+Copyright 2022 The Noto Project Authors (https://github.com/notofonts/arabic)

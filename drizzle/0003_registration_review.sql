@@ -1,0 +1,3 @@
+CREATE INDEX idx_registration_circle ON records(circle_id,status) WHERE kind='registration';
+--> statement-breakpoint
+CREATE TRIGGER registration_review_guard BEFORE UPDATE OF status ON records WHEN OLD.kind='registration' AND (OLD.status!='pending' OR NEW.status NOT IN ('approved','rejected') OR NOT EXISTS(SELECT 1 FROM users WHERE id=OLD.user_id AND status='pending' AND role IN ('student','parent')) OR NOT EXISTS(SELECT 1 FROM users u WHERE u.id=json_extract(NEW.data,'$.reviewer_id') AND u.status='active' AND (u.role='admin' OR (u.role='sheikh' AND EXISTS(SELECT 1 FROM assignments a WHERE a.user_id=u.id AND a.circle_id=OLD.circle_id))))) BEGIN SELECT RAISE(ABORT,'registration_conflict'); END;

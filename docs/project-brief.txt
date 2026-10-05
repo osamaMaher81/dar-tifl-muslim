@@ -1,0 +1,757 @@
+# FINAL PROJECT BRIEF — DAR AL-TIFL AL-MUSLIM ACADEMY MANAGEMENT SYSTEM
+
+### (Enhanced Edition — with added architectural, operational & cultural insights)
+
+> **How to read this document:** Your original brief is preserved in full and reorganized for clarity. Wherever I identified a gap, risk, or opportunity that experienced teams building similar systems (school ERPs, madrasa management platforms, SaaS scheduling systems) typically run into, I've added a **💡 Insight** callout directly under the relevant section. A completely new section (§33) at the end collects the strategic additions that didn't fit neatly into your existing numbering, so nothing you wrote is lost or reordered awkwardly.
+
+I want to build a complete, professional, real-world digital platform for managing Dar Al-Tifl Al-Muslim and its Quran memorization circles. This must **not** be a simple informational website or a static data display — it must be a complete administrative and educational management system connecting:
+
+**ADMINISTRATION ↔ SHEIKH ↔ STUDENT ↔ PARENT**
+
+The entire system must be interconnected, secure, scalable, responsive, and based on a real database so that all information and operations are permanently stored and never lost.
+
+---
+
+## 1. BRAND IDENTITY & UI/UX DESIGN
+
+- Official name: **Dar Al-Tifl Al-Muslim**. Use the attached logo without modification, on the login page, dashboard, sidebar, and main pages.
+- Modern, professional Islamic and educational identity suitable for children and young students.
+- Harmonious color palette inspired by the logo; clean, highly readable Arabic fonts.
+- Full Arabic RTL support throughout.
+- Clean, elegant, uncrowded UI with consistent iconography.
+- Careful attention to micro-states: buttons, tables, cards, modals, notifications, loading states, empty states, success/error messages.
+- Fully responsive across desktop, tablet, mobile.
+- Restrained animation — the system should feel like real software, not a demo.
+
+> **💡 Insight — Bilingual and mixed-direction support**
+> RTL Arabic is correctly the priority, but plan the CSS architecture (logical properties: `margin-inline-start` instead of `margin-left`, etc.) so an English or French interface toggle can be added later without a rewrite — many parent bodies include non-Arabic-literate guardians, and government/partner reporting is often required in a second language. Also decide *now* whether numerals display as Arabic-Indic (٠١٢٣) or Western (0123) per field — dates, phone numbers, and currency often need to stay Western-numeral even in a fully Arabic UI for readability.
+
+> **💡 Insight — Design for a child-and-parent audience, not just admins**
+> Most Quran-academy software is designed around the admin's convenience and the student/parent experience is an afterthought. Since children as young as 5–6 may use the student dashboard, consider a simplified "child mode" (large buttons, minimal text, progress shown visually as a filling Mushaf/Juz bar) with a separate, denser "parent mode" for guardians who want detail.
+
+---
+
+## Codex Detailed Implementation Expansion — 1. BRAND IDENTITY & UI/UX DESIGN
+
+### Detailed implementation interpretation for 1. BRAND IDENTITY & UI/UX DESIGN
+This subsection expands the requirement for implementation in Codex while preserving the original requirement above as the source of truth. It clarifies behavior, persistence, validation, and integration without deleting, weakening, or silently changing any stated detail.
+
+The implementation must directly support the following requirement: - Official name: **Dar Al-Tifl Al-Muslim**. Use the attached logo without modification, on the login page, dashboard, sidebar, and main pages. - Modern, professional Islamic and educational identity suitable for children and young students. - Harmonious color palette inspired by the logo; clean, highly readable Arabic fonts. - Full Arabic RTL support throughout. - Clean, elegant, uncrowded UI with consistent iconography. - Careful attention to micro-states: buttons, tables, cards, modals, notifications, loading states, empty states, success/error messages. - Fully responsive across desktop, tablet, mobile. - Restrained animation — the system should feel like real software, not a demo. ---
+
+### Codex implementation clarification
+Implement this section as a real part of the working system, not as a decorative mockup. Preserve every named concept, field, role, relationship, workflow, and restriction already stated above. The implementation should expose the requirement through an appropriate interface while also enforcing it in the application logic and database layer. A control that merely looks correct but does nothing is not considered implemented. Forms should validate their inputs, save valid data, show clear errors for invalid data, and update the relevant views without losing previously stored information.
+
+The wording above is the source of truth for this section. When turning it into code, do not simplify away any of the listed details. If the section names several pieces of information, model them separately where appropriate so that each value can be searched, filtered, reported, audited, and related to the correct record. Preserve historical information whenever the requirement calls for history or a timeline. Current values may be shown prominently, but they must not overwrite the underlying historical record when the system is expected to retain past events.
+
+The interface for this area should follow the academy's Arabic RTL, professional Islamic and educational visual language described in the brief. Keep the experience clear for the intended role: administration needs efficient dense controls, Sheikhs need fast operational entry, students need understandable progress, and parents need simple visibility into their children's status. Responsive behavior must remain usable on desktop, tablet, and mobile. Empty, loading, success, validation, and error states should be designed as real states of the application rather than placeholder text.
+
+After refresh, logout, reopening the application, changing devices, or returning later, previously saved information must still be available according to the user's permissions. Where a record belongs to a student, parent, Sheikh, circle, account, payment, attendance event, message, or other entity named in the brief, preserve that relationship explicitly. explicitly
+
+## 2. SYSTEM STRUCTURE
+
+**A. Public Academy Website** — about, vision/mission, programs, circles/packages, Sheikh profiles, news, activities/competitions/trips, achievements, stats, gallery, online registration, contact.
+
+**B. Internal Management System** — secure, role-gated, the core of the project.
+
+> **💡 Insight — Treat the public site as a lead-generation funnel, not just a brochure**
+> Add a lightweight analytics/conversion view to the admin dashboard: how many visitors reached the registration page vs. how many completed it vs. how many were approved. This turns the public site into a measurable enrollment pipeline rather than a static presence, and helps administration know where prospective families drop off.
+
+---
+
+## Codex Detailed Implementation Expansion — 2. SYSTEM STRUCTURE
+
+### Detailed implementation interpretation for 2. SYSTEM STRUCTURE
+This subsection expands the requirement for implementation in Codex while preserving the original requirement above as the source of truth. It clarifies behavior, persistence, validation, and integration without deleting, weakening, or silently changing any stated detail.
+
+The implementation must directly support the following requirement: **A. Public Academy Website** — about, vision/mission, programs, circles/packages, Sheikh profiles, news, activities/competitions/trips, achievements, stats, gallery, online registration, contact. **B. Internal Management System** — secure, role-gated, the core of the project. ---
+
+### Codex implementation clarification
+Implement this section as a real part of the working system, not as a decorative mockup. Preserve every named concept, field, role, relationship, workflow, and restriction already stated above. The implementation should expose the requirement through an appropriate interface while also enforcing it in the application logic and database layer. A control that merely looks correct but does nothing is not considered implemented. Forms should validate their inputs, save valid data, show clear errors for invalid data, and update the relevant views without losing previously stored information.
+
+The wording above is the source of truth for this section. When turning it into code, do not simplify away any of the listed details. If the section names several pieces of information, model them separately where appropriate so that each value can be searched, filtered, reported, audited, and related to the correct record. Preserve historical information whenever the requirement calls for history or a timeline. Current values may be shown prominently, but they must not overwrite the underlying historical record when the system is expected to retain past events.
+
+The interface for this area should follow the academy's Arabic RTL, professional Islamic and educational visual language described in the brief. Keep the experience clear for the intended role: administration needs efficient dense controls, Sheikhs need fast operational entry, students need understandable progress, and parents need simple visibility into their children's status. Responsive behavior must remain usable on desktop, tablet, and mobile. Empty, loading, success, validation, and error states should be designed as real states of the application rather than placeholder text.
+
+Data handling in this section must be connected to the central persistent database. Do not use temporary browser-only state as the authoritative record. After refresh, logout, reopening the application, changing devices, or returning later, previously saved information must still be available according to the user's permissions. Create the necessary relationships to the existing entities rather than duplicating the same information in unrelated places. Where a record belongs to a student, parent, Sheikh, circle, account, payment, attendance event, message, or other entity named in the brief, preserve that relationship explicitly.
+
+## 3. ACCOUNT REGISTRATION & LOGIN SYSTEM
+
+Self-service registration (name, phone, account type, password/confirm password), phone number as the primary login credential (no mandatory email). New accounts start as **PENDING APPROVAL** and only become **ACTIVE** after admin review; admin can also **REJECT**, **SUSPEND**, or **REACTIVATE**.
+
+> **💡 Insight — Phone-based auth needs a fallback and abuse controls**
+> Phone-number-as-username is the right call for this region/audience, but build in from day one:
+>
+> - **OTP verification via SMS/WhatsApp** at registration to confirm the number is real and reachable — this also prevents fake/duplicate account spam clogging the approval queue.
+> - **Account recovery flow** for a lost password when there's no email: typically OTP-to-phone + a manual admin-assisted reset as a last resort.
+> - **Rate limiting on login attempts** (e.g., lockout after 5 failed attempts) since phone numbers are easier to guess/enumerate than emails.
+> - Decide how you handle a **changed phone number** (very common) — this should be a formal, audited "change request" flow, not a silent self-edit, since phone number *is* the login identity.
+
+---
+
+## Codex Detailed Implementation Expansion — 3. ACCOUNT REGISTRATION & LOGIN SYSTEM
+
+### Detailed implementation interpretation for 3. ACCOUNT REGISTRATION & LOGIN SYSTEM
+This subsection expands the requirement for implementation in Codex while preserving the original requirement above as the source of truth. It clarifies behavior, persistence, validation, and integration without deleting, weakening, or silently changing any stated detail.
+
+The implementation must directly support the following requirement: Self-service registration (name, phone, account type, password/confirm password), phone number as the primary login credential (no mandatory email). New accounts start as **PENDING APPROVAL** and only become **ACTIVE** after admin review; admin can also **REJECT**, **SUSPEND**, or **REACTIVATE**. ---
+
+### Codex implementation clarification
+Implement this section as a real part of the working system, not as a decorative mockup. Preserve every named concept, field, role, relationship, workflow, and restriction already stated above. The implementation should expose the requirement through an appropriate interface while also enforcing it in the application logic and database layer. A control that merely looks correct but does nothing is not considered implemented. Forms should validate their inputs, save valid data, show clear errors for invalid data, and update the relevant views without losing previously stored information.
+
+The wording above is the source of truth for this section. When turning it into code, do not simplify away any of the listed details. If the section names several pieces of information, model them separately where appropriate so that each value can be searched, filtered, reported, audited, and related to the correct record. Preserve historical information whenever the requirement calls for history or a timeline. Current values may be shown prominently, but they must not overwrite the underlying historical record when the system is expected to retain past events.
+
+The interface for this area should follow the academy's Arabic RTL, professional Islamic and educational visual language described in the brief. Keep the experience clear for the intended role: administration needs efficient dense controls, Sheikhs need fast operational entry, students need understandable progress, and parents need simple visibility into their children's status. Responsive behavior must remain usable on desktop, tablet, and mobile. Empty, loading, success, validation, and error states should be designed as real states of the application rather than placeholder text.
+
+Data handling in this section must be connected to the central persistent database. Do not use temporary browser-only state as the authoritative record. After refresh, logout, reopening the application, changing devices, or returning later, previously saved information must still be available according to the user's permissions. Create the necessary relationships to the existing entities rather than duplicating the same information in unrelated places. Where a record belongs to a student, parent, Sheikh, circle, account, payment, attendance event, message, or other entity named in the brief, preserve that relationship explicitly.
+
+## 4. ACCOUNT REQUEST MANAGEMENT
+
+Dedicated "Account Requests" dashboard section listing all pending/approved/rejected/suspended requests with full detail, and admin actions to approve/reject/link/suspend/reactivate.
+
+> **💡 Insight — Prevent approval-queue bottlenecks**
+> As the academy grows, one admin reviewing every request one-by-one will not scale. Add:
+>
+> - **Bulk actions** (approve/reject multiple at once) for obviously valid requests.
+> - **SLA indicators** — flag requests pending longer than 48/72 hours in a different color, since delayed approval directly hurts enrollment conversion.
+> - **Delegate approval rights** to a secondary admin/registrar role so one person isn't a single point of failure.
+
+---
+
+## Codex Detailed Implementation Expansion — 4. ACCOUNT REQUEST MANAGEMENT
+
+### Detailed implementation interpretation for 4. ACCOUNT REQUEST MANAGEMENT
+This subsection expands the requirement for implementation in Codex while preserving the original requirement above as the source of truth. It clarifies behavior, persistence, validation, and integration without deleting, weakening, or silently changing any stated detail.
+
+The implementation must directly support the following requirement: Dedicated "Account Requests" dashboard section listing all pending/approved/rejected/suspended requests with full detail, and admin actions to approve/reject/link/suspend/reactivate. ---
+
+### Codex implementation clarification
+Implement this section as a real part of the working system, not as a decorative mockup. Preserve every named concept, field, role, relationship, workflow, and restriction already stated above. The implementation should expose the requirement through an appropriate interface while also enforcing it in the application logic and database layer. A control that merely looks correct but does nothing is not considered implemented. Forms should validate their inputs, save valid data, show clear errors for invalid data, and update the relevant views without losing previously stored information.
+
+The wording above is the source of truth for this section. When turning it into code, do not simplify away any of the listed details. If the section names several pieces of information, model them separately where appropriate so that each value can be searched, filtered, reported, audited, and related to the correct record. Preserve historical information whenever the requirement calls for history or a timeline. Current values may be shown prominently, but they must not overwrite the underlying historical record when the system is expected to retain past events.
+
+The interface for this area should follow the academy's Arabic RTL, professional Islamic and educational visual language described in the brief. Keep the experience clear for the intended role: administration needs efficient dense controls, Sheikhs need fast operational entry, students need understandable progress, and parents need simple visibility into their children's status. Responsive behavior must remain usable on desktop, tablet, and mobile. Empty, loading, success, validation, and error states should be designed as real states of the application rather than placeholder text.
+
+Data handling in this section must be connected to the central persistent database. Do not use temporary browser-only state as the authoritative record. After refresh, logout, reopening the application, changing devices, or returning later, previously saved information must still be available according to the user's permissions. Create the necessary relationships to the existing entities rather than duplicating the same information in unrelated places. Where a record belongs to a student, parent, Sheikh, circle, account, payment, attendance event, message, or other entity named in the brief, preserve that relationship explicitly.
+
+## 5. STUDENT ACCOUNT LINKING
+
+Secure linking mechanism between a self-registered student account and the correct existing student profile, admin-controlled and approved. Strict data isolation between students.
+
+> **💡 Insight**
+> To prevent a bad-faith or mistaken linking (e.g., someone claiming to be a student they aren't), require the registrant to supply a piece of verifying info the admin can cross-check — such as the enrollment date, circle name, or Sheikh's name — displayed as suggested matches rather than a free-text search, reducing both error and social-engineering risk.
+
+---
+
+## Codex Detailed Implementation Expansion — 5. STUDENT ACCOUNT LINKING
+
+### Detailed implementation interpretation for 5. STUDENT ACCOUNT LINKING
+This subsection expands the requirement for implementation in Codex while preserving the original requirement above as the source of truth. It clarifies behavior, persistence, validation, and integration without deleting, weakening, or silently changing any stated detail.
+
+The implementation must directly support the following requirement: Secure linking mechanism between a self-registered student account and the correct existing student profile, admin-controlled and approved. Strict data isolation between students. ---
+
+### Codex implementation clarification
+Implement this section as a real part of the working system, not as a decorative mockup. Preserve every named concept, field, role, relationship, workflow, and restriction already stated above. The implementation should expose the requirement through an appropriate interface while also enforcing it in the application logic and database layer. A control that merely looks correct but does nothing is not considered implemented. Forms should validate their inputs, save valid data, show clear errors for invalid data, and update the relevant views without losing previously stored information.
+
+The wording above is the source of truth for this section. When turning it into code, do not simplify away any of the listed details. If the section names several pieces of information, model them separately where appropriate so that each value can be searched, filtered, reported, audited, and related to the correct record. Preserve historical information whenever the requirement calls for history or a timeline. Current values may be shown prominently, but they must not overwrite the underlying historical record when the system is expected to retain past events.
+
+The interface for this area should follow the academy's Arabic RTL, professional Islamic and educational visual language described in the brief. Keep the experience clear for the intended role: administration needs efficient dense controls, Sheikhs need fast operational entry, students need understandable progress, and parents need simple visibility into their children's status. Responsive behavior must remain usable on desktop, tablet, and mobile. Empty, loading, success, validation, and error states should be designed as real states of the application rather than placeholder text.
+
+Data handling in this section must be connected to the central persistent database. Do not use temporary browser-only state as the authoritative record. After refresh, logout, reopening the application, changing devices, or returning later, previously saved information must still be available according to the user's permissions. Create the necessary relationships to the existing entities rather than duplicating the same information in unrelated places. Where a record belongs to a student, parent, Sheikh, circle, account, payment, attendance event, message, or other entity named in the brief, preserve that relationship explicitly.
+
+## 6. PARENT ACCOUNT & CHILDREN LINKING
+
+One parent account can be linked, post-approval, to multiple children; each child's data stays fully separated; a parent can never see unlinked students.
+
+> **💡 Insight — Plan for family complexity**
+> Real families are messier than "one parent, N children":
+>
+> - **Two guardians per child** (e.g., father and mother each want independent login access to the same child) — model this as a many-to-many `parent_student` relation, not one-to-many, from the start; retrofitting this later is painful.
+> - **Guardianship changes** (custody changes, a child transferring to a relative's care) should go through the same audited request flow as initial linking.
+> - Consider a **per-guardian visibility flag** if the academy ever needs to restrict what one linked guardian can see relative to another (e.g., financial info only visible to the paying guardian).
+
+---
+
+## Codex Detailed Implementation Expansion — 6. PARENT ACCOUNT & CHILDREN LINKING
+
+### Detailed implementation interpretation for 6. PARENT ACCOUNT & CHILDREN LINKING
+This subsection expands the requirement for implementation in Codex while preserving the original requirement above as the source of truth. It clarifies behavior, persistence, validation, and integration without deleting, weakening, or silently changing any stated detail.
+
+The implementation must directly support the following requirement: One parent account can be linked, post-approval, to multiple children; each child's data stays fully separated; a parent can never see unlinked students. ---
+
+### Codex implementation clarification
+Implement this section as a real part of the working system, not as a decorative mockup. Preserve every named concept, field, role, relationship, workflow, and restriction already stated above. The implementation should expose the requirement through an appropriate interface while also enforcing it in the application logic and database layer. A control that merely looks correct but does nothing is not considered implemented. Forms should validate their inputs, save valid data, show clear errors for invalid data, and update the relevant views without losing previously stored information.
+
+The wording above is the source of truth for this section. When turning it into code, do not simplify away any of the listed details. If the section names several pieces of information, model them separately where appropriate so that each value can be searched, filtered, reported, audited, and related to the correct record. Preserve historical information whenever the requirement calls for history or a timeline. Current values may be shown prominently, but they must not overwrite the underlying historical record when the system is expected to retain past events.
+
+The interface for this area should follow the academy's Arabic RTL, professional Islamic and educational visual language described in the brief. Keep the experience clear for the intended role: administration needs efficient dense controls, Sheikhs need fast operational entry, students need understandable progress, and parents need simple visibility into their children's status. Responsive behavior must remain usable on desktop, tablet, and mobile. Empty, loading, success, validation, and error states should be designed as real states of the application rather than placeholder text.
+
+Data handling in this section must be connected to the central persistent database. Do not use temporary browser-only state as the authoritative record. After refresh, logout, reopening the application, changing devices, or returning later, previously saved information must still be available according to the user's permissions. Create the necessary relationships to the existing entities rather than duplicating the same information in unrelated places. Where a record belongs to a student, parent, Sheikh, circle, account, payment, attendance event, message, or other entity named in the brief, preserve that relationship explicitly.
+
+## 7. USER ROLES & PERMISSIONS (RBAC)
+
+Four roles — **Administration, Sheikh, Student, Parent** — each scoped exactly as you specified (Sheikh limited to assigned circles; students/parents limited to their own data).
+
+> **💡 Insight — Design permissions as granular and role-*****and*****-record scoped**
+> Two refinements that pay off as the system matures:
+>
+> 1. **Split "Administration" into sub-roles** (Super Admin, Registrar, Accountant, Content Editor) even if you launch with one person wearing all hats — a flat, all-powerful admin role is a common security and operational weak point once staff grows. Financial data in particular (§15–17) often needs to be restricted to a bookkeeper role, separate from academic administration.
+> 2. **Row-level, not just page-level, permission checks** — a Sheikh's access must be enforced at the *database query* level (only circles/students explicitly assigned to them), not just hidden in the UI. A determined user changing a URL parameter or API call must still be blocked server-side.
+
+---
+
+## Codex Detailed Implementation Expansion — 7. USER ROLES & PERMISSIONS (RBAC)
+
+### Detailed implementation interpretation for 7. USER ROLES & PERMISSIONS (RBAC)
+This subsection expands the requirement for implementation in Codex while preserving the original requirement above as the source of truth. It clarifies behavior, persistence, validation, and integration without deleting, weakening, or silently changing any stated detail.
+
+The implementation must directly support the following requirement: Four roles — **Administration, Sheikh, Student, Parent** — each scoped exactly as you specified (Sheikh limited to assigned circles; students/parents limited to their own data). ---
+
+### Codex implementation clarification
+Implement this section as a real part of the working system, not as a decorative mockup. Preserve every named concept, field, role, relationship, workflow, and restriction already stated above. The implementation should expose the requirement through an appropriate interface while also enforcing it in the application logic and database layer. A control that merely looks correct but does nothing is not considered implemented. Forms should validate their inputs, save valid data, show clear errors for invalid data, and update the relevant views without losing previously stored information.
+
+The wording above is the source of truth for this section. When turning it into code, do not simplify away any of the listed details. If the section names several pieces of information, model them separately where appropriate so that each value can be searched, filtered, reported, audited, and related to the correct record. Preserve historical information whenever the requirement calls for history or a timeline. Current values may be shown prominently, but they must not overwrite the underlying historical record when the system is expected to retain past events.
+
+The interface for this area should follow the academy's Arabic RTL, professional Islamic and educational visual language described in the brief. Keep the experience clear for the intended role: administration needs efficient dense controls, Sheikhs need fast operational entry, students need understandable progress, and parents need simple visibility into their children's status. Responsive behavior must remain usable on desktop, tablet, and mobile. Empty, loading, success, validation, and error states should be designed as real states of the application rather than placeholder text.
+
+Data handling in this section must be connected to the central persistent database. Do not use temporary browser-only state as the authoritative record. After refresh, logout, reopening the application, changing devices, or returning later, previously saved information must still be available according to the user's permissions. Create the necessary relationships to the existing entities rather than duplicating the same information in unrelated places. Where a record belongs to a student, parent, Sheikh, circle, account, payment, attendance event, message, or other entity named in the brief, preserve that relationship explicitly.
+
+## 8. STUDENT PROFILE
+
+Personal, educational, and financial information plus a full chronological **student timeline** from day one (attendance, memorization, revision, assessments, results, notes, level changes, circle transfers, payments).
+
+> **💡 Insight — The timeline is your most valuable long-term asset; protect it**
+> This timeline effectively becomes each child's Quran-memorization "permanent record" — potentially spanning a decade. Two additions:
+>
+> - **Immutability**: timeline entries should never be hard-edited after the fact; corrections should append a new entry referencing the old one (audit-safe), matching your Soft Delete philosophy in §24.
+> - **Exportable "memorization certificate" / progress report**, generated from the timeline, that a family can download or print for scholarships, other institutions, or personal keepsake — this is a small feature with outsized emotional and practical value for families.
+
+---
+
+## Codex Detailed Implementation Expansion — 8. STUDENT PROFILE
+
+### Detailed implementation interpretation for 8. STUDENT PROFILE
+This subsection expands the requirement for implementation in Codex while preserving the original requirement above as the source of truth. It clarifies behavior, persistence, validation, and integration without deleting, weakening, or silently changing any stated detail.
+
+The implementation must directly support the following requirement: Personal, educational, and financial information plus a full chronological **student timeline** from day one (attendance, memorization, revision, assessments, results, notes, level changes, circle transfers, payments). ---
+
+### Codex implementation clarification
+Implement this section as a real part of the working system, not as a decorative mockup. Preserve every named concept, field, role, relationship, workflow, and restriction already stated above. The implementation should expose the requirement through an appropriate interface while also enforcing it in the application logic and database layer. A control that merely looks correct but does nothing is not considered implemented. Forms should validate their inputs, save valid data, show clear errors for invalid data, and update the relevant views without losing previously stored information.
+
+The wording above is the source of truth for this section. When turning it into code, do not simplify away any of the listed details. If the section names several pieces of information, model them separately where appropriate so that each value can be searched, filtered, reported, audited, and related to the correct record. Preserve historical information whenever the requirement calls for history or a timeline. Current values may be shown prominently, but they must not overwrite the underlying historical record when the system is expected to retain past events.
+
+The interface for this area should follow the academy's Arabic RTL, professional Islamic and educational visual language described in the brief. Keep the experience clear for the intended role: administration needs efficient dense controls, Sheikhs need fast operational entry, students need understandable progress, and parents need simple visibility into their children's status. Responsive behavior must remain usable on desktop, tablet, and mobile. Empty, loading, success, validation, and error states should be designed as real states of the application rather than placeholder text.
+
+Data handling in this section must be connected to the central persistent database. Do not use temporary browser-only state as the authoritative record. After refresh, logout, reopening the application, changing devices, or returning later, previously saved information must still be available according to the user's permissions. Create the necessary relationships to the existing entities rather than duplicating the same information in unrelated places. Where a record belongs to a student, parent, Sheikh, circle, account, payment, attendance event, message, or other entity named in the brief, preserve that relationship explicitly.
+
+## 9. STUDENT DASHBOARD
+
+Completion percentages, memorization plan (Surah/Ayahs/required/completed/remaining), next-session requirements, ability to mark tasks "COMPLETED," chronological memorization history.
+
+> **💡 Insight — Make progress visual, not just numeric**
+> Children respond strongly to visual progress metaphors. Consider a **Juz'/Hizb progress map** (30-part visual of the Quran, shaded as memorized) as the dashboard's centerpiece rather than a plain percentage — it's motivating, intuitive even for non-readers, and doubles as a beautiful, shareable achievement visual for the public website's "student achievements" section (§2A).
+
+---
+
+## Codex Detailed Implementation Expansion — 9. STUDENT DASHBOARD
+
+### Detailed implementation interpretation for 9. STUDENT DASHBOARD
+This subsection expands the requirement for implementation in Codex while preserving the original requirement above as the source of truth. It clarifies behavior, persistence, validation, and integration without deleting, weakening, or silently changing any stated detail.
+
+The implementation must directly support the following requirement: Completion percentages, memorization plan (Surah/Ayahs/required/completed/remaining), next-session requirements, ability to mark tasks "COMPLETED," chronological memorization history. ---
+
+### Codex implementation clarification
+Implement this section as a real part of the working system, not as a decorative mockup. Preserve every named concept, field, role, relationship, workflow, and restriction already stated above. The implementation should expose the requirement through an appropriate interface while also enforcing it in the application logic and database layer. A control that merely looks correct but does nothing is not considered implemented. Forms should validate their inputs, save valid data, show clear errors for invalid data, and update the relevant views without losing previously stored information.
+
+The wording above is the source of truth for this section. When turning it into code, do not simplify away any of the listed details. If the section names several pieces of information, model them separately where appropriate so that each value can be searched, filtered, reported, audited, and related to the correct record. Preserve historical information whenever the requirement calls for history or a timeline. Current values may be shown prominently, but they must not overwrite the underlying historical record when the system is expected to retain past events.
+
+The interface for this area should follow the academy's Arabic RTL, professional Islamic and educational visual language described in the brief. Keep the experience clear for the intended role: administration needs efficient dense controls, Sheikhs need fast operational entry, students need understandable progress, and parents need simple visibility into their children's status. Responsive behavior must remain usable on desktop, tablet, and mobile. Empty, loading, success, validation, and error states should be designed as real states of the application rather than placeholder text.
+
+Data handling in this section must be connected to the central persistent database. Do not use temporary browser-only state as the authoritative record. After refresh, logout, reopening the application, changing devices, or returning later, previously saved information must still be available according to the user's permissions. Create the necessary relationships to the existing entities rather than duplicating the same information in unrelated places. Where a record belongs to a student, parent, Sheikh, circle, account, payment, attendance event, message, or other entity named in the brief, preserve that relationship explicitly.
+
+## 10. PARENT DASHBOARD
+
+All linked children, per-child academic/attendance/financial status, easy child-switching without data mixing.
+
+> **💡 Insight**
+> Add a **weekly/monthly digest option** (push notification, WhatsApp, or email summary) so parents who don't log in daily still stay informed — this reduces support burden ("why didn't anyone tell me my son was absent") far more effectively than a dashboard they have to remember to check.
+
+---
+
+## Codex Detailed Implementation Expansion — 10. PARENT DASHBOARD
+
+### Detailed implementation interpretation for 10. PARENT DASHBOARD
+This subsection expands the requirement for implementation in Codex while preserving the original requirement above as the source of truth. It clarifies behavior, persistence, validation, and integration without deleting, weakening, or silently changing any stated detail.
+
+The implementation must directly support the following requirement: All linked children, per-child academic/attendance/financial status, easy child-switching without data mixing. ---
+
+### Codex implementation clarification
+Implement this section as a real part of the working system, not as a decorative mockup. Preserve every named concept, field, role, relationship, workflow, and restriction already stated above. The implementation should expose the requirement through an appropriate interface while also enforcing it in the application logic and database layer. A control that merely looks correct but does nothing is not considered implemented. Forms should validate their inputs, save valid data, show clear errors for invalid data, and update the relevant views without losing previously stored information.
+
+The wording above is the source of truth for this section. When turning it into code, do not simplify away any of the listed details. If the section names several pieces of information, model them separately where appropriate so that each value can be searched, filtered, reported, audited, and related to the correct record. Preserve historical information whenever the requirement calls for history or a timeline. Current values may be shown prominently, but they must not overwrite the underlying historical record when the system is expected to retain past events.
+
+The interface for this area should follow the academy's Arabic RTL, professional Islamic and educational visual language described in the brief. Keep the experience clear for the intended role: administration needs efficient dense controls, Sheikhs need fast operational entry, students need understandable progress, and parents need simple visibility into their children's status. Responsive behavior must remain usable on desktop, tablet, and mobile. Empty, loading, success, validation, and error states should be designed as real states of the application rather than placeholder text.
+
+Data handling in this section must be connected to the central persistent database. Do not use temporary browser-only state as the authoritative record. After refresh, logout, reopening the application, changing devices, or returning later, previously saved information must still be available according to the user's permissions. Create the necessary relationships to the existing entities rather than duplicating the same information in unrelated places. Where a record belongs to a student, parent, Sheikh, circle, account, payment, attendance event, message, or other entity named in the brief, preserve that relationship explicitly.
+
+## 11. CIRCLES & PACKAGES MANAGEMENT
+
+Full circle CRUD (name, level, type, days/times, duration, assigned Sheikh(s), students, capacity, status), student transfers between circles, multi-Sheikh assignment.
+
+> **💡 Insight — Handle capacity and demand explicitly**
+> If a circle can be "full," you need a **waitlist**, not just a rejected registration — auto-notify the next waitlisted family when a seat opens (e.g., via graduation, transfer, or withdrawal). This is a very common real-world need for popular Sheikhs/time slots and is cheap to build now vs. retrofitting later.
+
+---
+
+## Codex Detailed Implementation Expansion — 11. CIRCLES & PACKAGES MANAGEMENT
+
+### Detailed implementation interpretation for 11. CIRCLES & PACKAGES MANAGEMENT
+This subsection expands the requirement for implementation in Codex while preserving the original requirement above as the source of truth. It clarifies behavior, persistence, validation, and integration without deleting, weakening, or silently changing any stated detail.
+
+The implementation must directly support the following requirement: Full circle CRUD (name, level, type, days/times, duration, assigned Sheikh(s), students, capacity, status), student transfers between circles, multi-Sheikh assignment. ---
+
+### Codex implementation clarification
+Implement this section as a real part of the working system, not as a decorative mockup. Preserve every named concept, field, role, relationship, workflow, and restriction already stated above. The implementation should expose the requirement through an appropriate interface while also enforcing it in the application logic and database layer. A control that merely looks correct but does nothing is not considered implemented. Forms should validate their inputs, save valid data, show clear errors for invalid data, and update the relevant views without losing previously stored information.
+
+The wording above is the source of truth for this section. When turning it into code, do not simplify away any of the listed details. If the section names several pieces of information, model them separately where appropriate so that each value can be searched, filtered, reported, audited, and related to the correct record. Preserve historical information whenever the requirement calls for history or a timeline. Current values may be shown prominently, but they must not overwrite the underlying historical record when the system is expected to retain past events.
+
+The interface for this area should follow the academy's Arabic RTL, professional Islamic and educational visual language described in the brief. Keep the experience clear for the intended role: administration needs efficient dense controls, Sheikhs need fast operational entry, students need understandable progress, and parents need simple visibility into their children's status. Responsive behavior must remain usable on desktop, tablet, and mobile. Empty, loading, success, validation, and error states should be designed as real states of the application rather than placeholder text.
+
+Data handling in this section must be connected to the central persistent database. Do not use temporary browser-only state as the authoritative record. After refresh, logout, reopening the application, changing devices, or returning later, previously saved information must still be available according to the user's permissions. Create the necessary relationships to the existing entities rather than duplicating the same information in unrelated places. Where a record belongs to a student, parent, Sheikh, circle, account, payment, attendance event, message, or other entity named in the brief, preserve that relationship explicitly.
+
+## 12–13. SHEIKH DASHBOARD & PROFILE
+
+Assigned circles, schedule, attendance/progress recording, financial dues, full activity attribution on every action (name/action/date/time/changed data).
+
+> **💡 Insight — Plan for substitution and continuity**
+> Sheikhs get sick, travel, or leave. Add a **substitute-teacher workflow**: a temporary or permanent reassignment of a circle to another Sheikh, with the system preserving the original Sheikh's historical attribution on past records (don't rewrite history) while routing new sessions to the substitute. Without this, a single Sheikh's absence can silently break attendance-taking for an entire circle.
+
+---
+
+## Codex Detailed Implementation Expansion — 12–13. SHEIKH DASHBOARD & PROFILE
+
+### Detailed implementation interpretation for 12–13. SHEIKH DASHBOARD & PROFILE
+This subsection expands the requirement for implementation in Codex while preserving the original requirement above as the source of truth. It clarifies behavior, persistence, validation, and integration without deleting, weakening, or silently changing any stated detail.
+
+The implementation must directly support the following requirement: Assigned circles, schedule, attendance/progress recording, financial dues, full activity attribution on every action (name/action/date/time/changed data). ---
+
+### Codex implementation clarification
+Implement this section as a real part of the working system, not as a decorative mockup. Preserve every named concept, field, role, relationship, workflow, and restriction already stated above. The implementation should expose the requirement through an appropriate interface while also enforcing it in the application logic and database layer. A control that merely looks correct but does nothing is not considered implemented. Forms should validate their inputs, save valid data, show clear errors for invalid data, and update the relevant views without losing previously stored information.
+
+The wording above is the source of truth for this section. When turning it into code, do not simplify away any of the listed details. If the section names several pieces of information, model them separately where appropriate so that each value can be searched, filtered, reported, audited, and related to the correct record. Preserve historical information whenever the requirement calls for history or a timeline. Current values may be shown prominently, but they must not overwrite the underlying historical record when the system is expected to retain past events.
+
+The interface for this area should follow the academy's Arabic RTL, professional Islamic and educational visual language described in the brief. Keep the experience clear for the intended role: administration needs efficient dense controls, Sheikhs need fast operational entry, students need understandable progress, and parents need simple visibility into their children's status. Responsive behavior must remain usable on desktop, tablet, and mobile. Empty, loading, success, validation, and error states should be designed as real states of the application rather than placeholder text.
+
+Data handling in this section must be connected to the central persistent database. Do not use temporary browser-only state as the authoritative record. After refresh, logout, reopening the application, changing devices, or returning later, previously saved information must still be available according to the user's permissions. Create the necessary relationships to the existing entities rather than duplicating the same information in unrelated places. Where a record belongs to a student, parent, Sheikh, circle, account, payment, attendance event, message, or other entity named in the brief, preserve that relationship explicitly.
+
+## 14. STUDENT ATTENDANCE & DEPARTURE
+
+Present/Absent/Late/Excused statuses, exact check-in/check-out to the minute, full history in profile and reports.
+
+> **💡 Insight — Automate the consequence of absence, don't just log it**
+> Logging absence is necessary but not sufficient. Two follow-on automations add real value:
+>
+> - **Auto-notify parent** the same day a child is marked absent (not buried in a weekly report).
+> - **Makeup session tracking** — many Quran academies allow a missed session to be made up; model this explicitly (a "makeup owed" counter per student) rather than leaving it as an informal note, or it becomes a recurring source of parent disputes.
+
+---
+
+## Codex Detailed Implementation Expansion — 14. STUDENT ATTENDANCE & DEPARTURE
+
+### Detailed implementation interpretation for 14. STUDENT ATTENDANCE & DEPARTURE
+This subsection expands the requirement for implementation in Codex while preserving the original requirement above as the source of truth. It clarifies behavior, persistence, validation, and integration without deleting, weakening, or silently changing any stated detail.
+
+The implementation must directly support the following requirement: Present/Absent/Late/Excused statuses, exact check-in/check-out to the minute, full history in profile and reports. ---
+
+### Codex implementation clarification
+Implement this section as a real part of the working system, not as a decorative mockup. Preserve every named concept, field, role, relationship, workflow, and restriction already stated above. The implementation should expose the requirement through an appropriate interface while also enforcing it in the application logic and database layer. A control that merely looks correct but does nothing is not considered implemented. Forms should validate their inputs, save valid data, show clear errors for invalid data, and update the relevant views without losing previously stored information.
+
+The wording above is the source of truth for this section. When turning it into code, do not simplify away any of the listed details. If the section names several pieces of information, model them separately where appropriate so that each value can be searched, filtered, reported, audited, and related to the correct record. Preserve historical information whenever the requirement calls for history or a timeline. Current values may be shown prominently, but they must not overwrite the underlying historical record when the system is expected to retain past events.
+
+The interface for this area should follow the academy's Arabic RTL, professional Islamic and educational visual language described in the brief. Keep the experience clear for the intended role: administration needs efficient dense controls, Sheikhs need fast operational entry, students need understandable progress, and parents need simple visibility into their children's status. Responsive behavior must remain usable on desktop, tablet, and mobile. Empty, loading, success, validation, and error states should be designed as real states of the application rather than placeholder text.
+
+Data handling in this section must be connected to the central persistent database. Do not use temporary browser-only state as the authoritative record. After refresh, logout, reopening the application, changing devices, or returning later, previously saved information must still be available according to the user's permissions. Create the necessary relationships to the existing entities rather than duplicating the same information in unrelated places. Where a record belongs to a student, parent, Sheikh, circle, account, payment, attendance event, message, or other entity named in the brief, preserve that relationship explicitly.
+
+## 15. SHEIKH ATTENDANCE & SALARY MANAGEMENT
+
+Check-in/out, hours, sessions, lateness/absence tracking; hourly/per-session/fixed-monthly/mixed salary methods with automatic calculation and a full monthly statement (hours, sessions, deductions, additions, approved expenses, net due).
+
+> **💡 Insight — Payroll needs an approval gate and history, just like expenses**
+> Treat each monthly salary statement as a formal, generated document that an admin **finalizes/locks** (not a live number that keeps changing after payment). Once locked, it should be immutable and archived, with any correction issued as an adjustment entry in the *following* period — this mirrors real accounting practice and avoids disputes about "what was I actually paid in March."
+
+---
+
+## Codex Detailed Implementation Expansion — 15. SHEIKH ATTENDANCE & SALARY MANAGEMENT
+
+### Detailed implementation interpretation for 15. SHEIKH ATTENDANCE & SALARY MANAGEMENT
+This subsection expands the requirement for implementation in Codex while preserving the original requirement above as the source of truth. It clarifies behavior, persistence, validation, and integration without deleting, weakening, or silently changing any stated detail.
+
+The implementation must directly support the following requirement: Check-in/out, hours, sessions, lateness/absence tracking; hourly/per-session/fixed-monthly/mixed salary methods with automatic calculation and a full monthly statement (hours, sessions, deductions, additions, approved expenses, net due). ---
+
+### Codex implementation clarification
+Implement this section as a real part of the working system, not as a decorative mockup. Preserve every named concept, field, role, relationship, workflow, and restriction already stated above. The implementation should expose the requirement through an appropriate interface while also enforcing it in the application logic and database layer. A control that merely looks correct but does nothing is not considered implemented. Forms should validate their inputs, save valid data, show clear errors for invalid data, and update the relevant views without losing previously stored information.
+
+The wording above is the source of truth for this section. When turning it into code, do not simplify away any of the listed details. If the section names several pieces of information, model them separately where appropriate so that each value can be searched, filtered, reported, audited, and related to the correct record. Preserve historical information whenever the requirement calls for history or a timeline. Current values may be shown prominently, but they must not overwrite the underlying historical record when the system is expected to retain past events.
+
+The interface for this area should follow the academy's Arabic RTL, professional Islamic and educational visual language described in the brief. Keep the experience clear for the intended role: administration needs efficient dense controls, Sheikhs need fast operational entry, students need understandable progress, and parents need simple visibility into their children's status. Responsive behavior must remain usable on desktop, tablet, and mobile. Empty, loading, success, validation, and error states should be designed as real states of the application rather than placeholder text.
+
+Data handling in this section must be connected to the central persistent database. Do not use temporary browser-only state as the authoritative record. After refresh, logout, reopening the application, changing devices, or returning later, previously saved information must still be available according to the user's permissions. Create the necessary relationships to the existing entities rather than duplicating the same information in unrelated places. Where a record belongs to a student, parent, Sheikh, circle, account, payment, attendance event, message, or other entity named in the brief, preserve that relationship explicitly.
+
+## 16. SHEIKH EXPENSES
+
+Submission (amount, reason, type, date, notes, receipt image) → Pending Review → Approved/Rejected, only added to dues after approval, fully visible in statements and reports.
+
+> **💡 Insight**
+> Add **expense categories with optional spending caps** (e.g., "supplies," "transport," "event costs") so administration can track where academy money actually goes over time via the reports module (§21), not just approve/reject individually.
+
+---
+
+## Codex Detailed Implementation Expansion — 16. SHEIKH EXPENSES
+
+### Detailed implementation interpretation for 16. SHEIKH EXPENSES
+This subsection expands the requirement for implementation in Codex while preserving the original requirement above as the source of truth. It clarifies behavior, persistence, validation, and integration without deleting, weakening, or silently changing any stated detail.
+
+The implementation must directly support the following requirement: Submission (amount, reason, type, date, notes, receipt image) → Pending Review → Approved/Rejected, only added to dues after approval, fully visible in statements and reports. ---
+
+### Codex implementation clarification
+Implement this section as a real part of the working system, not as a decorative mockup. Preserve every named concept, field, role, relationship, workflow, and restriction already stated above. The implementation should expose the requirement through an appropriate interface while also enforcing it in the application logic and database layer. A control that merely looks correct but does nothing is not considered implemented. Forms should validate their inputs, save valid data, show clear errors for invalid data, and update the relevant views without losing previously stored information.
+
+The wording above is the source of truth for this section. When turning it into code, do not simplify away any of the listed details. If the section names several pieces of information, model them separately where appropriate so that each value can be searched, filtered, reported, audited, and related to the correct record. Preserve historical information whenever the requirement calls for history or a timeline. Current values may be shown prominently, but they must not overwrite the underlying historical record when the system is expected to retain past events.
+
+The interface for this area should follow the academy's Arabic RTL, professional Islamic and educational visual language described in the brief. Keep the experience clear for the intended role: administration needs efficient dense controls, Sheikhs need fast operational entry, students need understandable progress, and parents need simple visibility into their children's status. Responsive behavior must remain usable on desktop, tablet, and mobile. Empty, loading, success, validation, and error states should be designed as real states of the application rather than placeholder text.
+
+Data handling in this section must be connected to the central persistent database. Do not use temporary browser-only state as the authoritative record. After refresh, logout, reopening the application, changing devices, or returning later, previously saved information must still be available according to the user's permissions. Create the necessary relationships to the existing entities rather than duplicating the same information in unrelated places. Where a record belongs to a student, parent, Sheikh, circle, account, payment, attendance event, message, or other entity named in the brief, preserve that relationship explicitly.
+
+## 17. SUBSCRIPTIONS & PAYMENTS
+
+Full financial record per student (amount, type, due date, paid, remaining, status, history) with notifications for upcoming/overdue/outstanding balances.
+
+> **💡 Insight — This is the section most likely to need real payment-gateway integration**
+> Decide early whether payment is **recorded manually by admin** (cash/bank transfer logged after the fact) or **collected online** (card/mobile wallet). If online payment is ever wanted:
+>
+> - Design the payments table to store a `payment_method` and `external_reference_id` from day one, even if unused initially — this avoids a schema migration later.
+> - Support **family-level billing bundles** (a discount or combined invoice for a parent with 3 children) — a very common real request that's hard to bolt on after the fact if billing is modeled strictly per-student.
+> - Consider **prorated/partial-month billing** for mid-month enrollments, and refund/credit handling for withdrawals — these edge cases are where financial modules usually break in production.
+
+---
+
+## Codex Detailed Implementation Expansion — 17. SUBSCRIPTIONS & PAYMENTS
+
+### Detailed implementation interpretation for 17. SUBSCRIPTIONS & PAYMENTS
+This subsection expands the requirement for implementation in Codex while preserving the original requirement above as the source of truth. It clarifies behavior, persistence, validation, and integration without deleting, weakening, or silently changing any stated detail.
+
+The implementation must directly support the following requirement: Full financial record per student (amount, type, due date, paid, remaining, status, history) with notifications for upcoming/overdue/outstanding balances. ---
+
+### Codex implementation clarification
+Implement this section as a real part of the working system, not as a decorative mockup. Preserve every named concept, field, role, relationship, workflow, and restriction already stated above. The implementation should expose the requirement through an appropriate interface while also enforcing it in the application logic and database layer. A control that merely looks correct but does nothing is not considered implemented. Forms should validate their inputs, save valid data, show clear errors for invalid data, and update the relevant views without losing previously stored information.
+
+The wording above is the source of truth for this section. When turning it into code, do not simplify away any of the listed details. If the section names several pieces of information, model them separately where appropriate so that each value can be searched, filtered, reported, audited, and related to the correct record. Preserve historical information whenever the requirement calls for history or a timeline. Current values may be shown prominently, but they must not overwrite the underlying historical record when the system is expected to retain past events.
+
+The interface for this area should follow the academy's Arabic RTL, professional Islamic and educational visual language described in the brief. Keep the experience clear for the intended role: administration needs efficient dense controls, Sheikhs need fast operational entry, students need understandable progress, and parents need simple visibility into their children's status. Responsive behavior must remain usable on desktop, tablet, and mobile. Empty, loading, success, validation, and error states should be designed as real states of the application rather than placeholder text.
+
+Data handling in this section must be connected to the central persistent database. Do not use temporary browser-only state as the authoritative record. After refresh, logout, reopening the application, changing devices, or returning later, previously saved information must still be available according to the user's permissions. Create the necessary relationships to the existing entities rather than duplicating the same information in unrelated places. Where a record belongs to a student, parent, Sheikh, circle, account, payment, attendance event, message, or other entity named in the brief, preserve that relationship explicitly.
+
+## 18–19. MESSAGING & NOTIFICATIONS
+
+Individual, circle-level, and academy-wide messaging; notification types spanning attendance, subscriptions, memorization, assessments, announcements, and schedules; a central admin message center with recipient targeting and history.
+
+> **💡 Insight — Meet families where they already are**
+> In-app notifications alone will be under-read by busy parents. Strongly consider **WhatsApp Business API or SMS delivery** as the primary channel for time-sensitive notifications (absence, payment due), with in-app messaging as the secondary/searchable archive — this is standard practice for family-facing education platforms in Arabic-speaking regions, where WhatsApp adoption is near-universal.
+> Also add a **read-receipt / delivery-status indicator** for admin-sent announcements, so administration knows whether an important notice (e.g., a schedule change) actually reached families.
+
+---
+
+## Codex Detailed Implementation Expansion — 18–19. MESSAGING & NOTIFICATIONS
+
+### Detailed implementation interpretation for 18–19. MESSAGING & NOTIFICATIONS
+This subsection expands the requirement for implementation in Codex while preserving the original requirement above as the source of truth. It clarifies behavior, persistence, validation, and integration without deleting, weakening, or silently changing any stated detail.
+
+The implementation must directly support the following requirement: Individual, circle-level, and academy-wide messaging; notification types spanning attendance, subscriptions, memorization, assessments, announcements, and schedules; a central admin message center with recipient targeting and history. ---
+
+### Codex implementation clarification
+Implement this section as a real part of the working system, not as a decorative mockup. Preserve every named concept, field, role, relationship, workflow, and restriction already stated above. The implementation should expose the requirement through an appropriate interface while also enforcing it in the application logic and database layer. A control that merely looks correct but does nothing is not considered implemented. Forms should validate their inputs, save valid data, show clear errors for invalid data, and update the relevant views without losing previously stored information.
+
+The wording above is the source of truth for this section. When turning it into code, do not simplify away any of the listed details. If the section names several pieces of information, model them separately where appropriate so that each value can be searched, filtered, reported, audited, and related to the correct record. Preserve historical information whenever the requirement calls for history or a timeline. Current values may be shown prominently, but they must not overwrite the underlying historical record when the system is expected to retain past events.
+
+The interface for this area should follow the academy's Arabic RTL, professional Islamic and educational visual language described in the brief. Keep the experience clear for the intended role: administration needs efficient dense controls, Sheikhs need fast operational entry, students need understandable progress, and parents need simple visibility into their children's status. Responsive behavior must remain usable on desktop, tablet, and mobile. Empty, loading, success, validation, and error states should be designed as real states of the application rather than placeholder text.
+
+Data handling in this section must be connected to the central persistent database. Do not use temporary browser-only state as the authoritative record. After refresh, logout, reopening the application, changing devices, or returning later, previously saved information must still be available according to the user's permissions. Create the necessary relationships to the existing entities rather than duplicating the same information in unrelated places. Where a record belongs to a student, parent, Sheikh, circle, account, payment, attendance event, message, or other entity named in the brief, preserve that relationship explicitly.
+
+## 20. ADMINISTRATION DASHBOARD
+
+Live stats (students, Sheikhs, circles, today's attendance, subscriptions, payments, outstanding balances, expenses, dues) with charts (growth, attendance, circle performance, memorization progress, revenue, expenses, salaries) and flexible date filtering.
+
+> **💡 Insight**
+> Add a small **"needs attention" panel** at the top of the dashboard — pending account requests, pending expense approvals, overdue payments, unresolved messages — so admins have a single actionable to-do list instead of having to hunt across modules each morning.
+
+---
+
+## Codex Detailed Implementation Expansion — 20. ADMINISTRATION DASHBOARD
+
+### Detailed implementation interpretation for 20. ADMINISTRATION DASHBOARD
+This subsection expands the requirement for implementation in Codex while preserving the original requirement above as the source of truth. It clarifies behavior, persistence, validation, and integration without deleting, weakening, or silently changing any stated detail.
+
+The implementation must directly support the following requirement: Live stats (students, Sheikhs, circles, today's attendance, subscriptions, payments, outstanding balances, expenses, dues) with charts (growth, attendance, circle performance, memorization progress, revenue, expenses, salaries) and flexible date filtering. ---
+
+### Codex implementation clarification
+Implement this section as a real part of the working system, not as a decorative mockup. Preserve every named concept, field, role, relationship, workflow, and restriction already stated above. The implementation should expose the requirement through an appropriate interface while also enforcing it in the application logic and database layer. A control that merely looks correct but does nothing is not considered implemented. Forms should validate their inputs, save valid data, show clear errors for invalid data, and update the relevant views without losing previously stored information.
+
+The wording above is the source of truth for this section. When turning it into code, do not simplify away any of the listed details. If the section names several pieces of information, model them separately where appropriate so that each value can be searched, filtered, reported, audited, and related to the correct record. Preserve historical information whenever the requirement calls for history or a timeline. Current values may be shown prominently, but they must not overwrite the underlying historical record when the system is expected to retain past events.
+
+The interface for this area should follow the academy's Arabic RTL, professional Islamic and educational visual language described in the brief. Keep the experience clear for the intended role: administration needs efficient dense controls, Sheikhs need fast operational entry, students need understandable progress, and parents need simple visibility into their children's status. Responsive behavior must remain usable on desktop, tablet, and mobile. Empty, loading, success, validation, and error states should be designed as real states of the application rather than placeholder text.
+
+Data handling in this section must be connected to the central persistent database. Do not use temporary browser-only state as the authoritative record. After refresh, logout, reopening the application, changing devices, or returning later, previously saved information must still be available according to the user's permissions. Create the necessary relationships to the existing entities rather than duplicating the same information in unrelated places. Where a record belongs to a student, parent, Sheikh, circle, account, payment, attendance event, message, or other entity named in the brief, preserve that relationship explicitly.
+
+## 21. REPORTS
+
+Comprehensive report set (student, memorization, revision, attendance, absence, assessment, circle performance, Sheikh attendance/hours/salary/expenses/statements, subscriptions, payments, outstanding balances, progress, monthly/annual) with search, filter, sort, print, export.
+
+> **💡 Insight**
+> Specify export formats explicitly (PDF for print-ready official reports like salary statements or memorization certificates; Excel/CSV for raw data admins may want to analyze further) — "exportable" is often left ambiguous and causes rework later.
+
+---
+
+## Codex Detailed Implementation Expansion — 21. REPORTS
+
+### Detailed implementation interpretation for 21. REPORTS
+This subsection expands the requirement for implementation in Codex while preserving the original requirement above as the source of truth. It clarifies behavior, persistence, validation, and integration without deleting, weakening, or silently changing any stated detail.
+
+The implementation must directly support the following requirement: Comprehensive report set (student, memorization, revision, attendance, absence, assessment, circle performance, Sheikh attendance/hours/salary/expenses/statements, subscriptions, payments, outstanding balances, progress, monthly/annual) with search, filter, sort, print, export. ---
+
+### Codex implementation clarification
+Implement this section as a real part of the working system, not as a decorative mockup. Preserve every named concept, field, role, relationship, workflow, and restriction already stated above. The implementation should expose the requirement through an appropriate interface while also enforcing it in the application logic and database layer. A control that merely looks correct but does nothing is not considered implemented. Forms should validate their inputs, save valid data, show clear errors for invalid data, and update the relevant views without losing previously stored information.
+
+The wording above is the source of truth for this section. When turning it into code, do not simplify away any of the listed details. If the section names several pieces of information, model them separately where appropriate so that each value can be searched, filtered, reported, audited, and related to the correct record. Preserve historical information whenever the requirement calls for history or a timeline. Current values may be shown prominently, but they must not overwrite the underlying historical record when the system is expected to retain past events.
+
+The interface for this area should follow the academy's Arabic RTL, professional Islamic and educational visual language described in the brief. Keep the experience clear for the intended role: administration needs efficient dense controls, Sheikhs need fast operational entry, students need understandable progress, and parents need simple visibility into their children's status. Responsive behavior must remain usable on desktop, tablet, and mobile. Empty, loading, success, validation, and error states should be designed as real states of the application rather than placeholder text.
+
+Data handling in this section must be connected to the central persistent database. Do not use temporary browser-only state as the authoritative record. After refresh, logout, reopening the application, changing devices, or returning later, previously saved information must still be available according to the user's permissions. Create the necessary relationships to the existing entities rather than duplicating the same information in unrelated places. Where a record belongs to a student, parent, Sheikh, circle, account, payment, attendance event, message, or other entity named in the brief, preserve that relationship explicitly.
+
+## 22. DATABASE & PERMANENT DATA STORAGE
+
+Real, centralized, persistent database covering all entities — students, parents, Sheikhs, circles, accounts, requests, attendance, memorization, revision, assessments, results, subscriptions, payments, salaries, expenses, messages, notifications, notes, system activity. Nothing lost on refresh, logout, device change, or update.
+
+> **💡 Insight — This is the foundation everything else depends on; get the relationships right first**
+> Before any UI work, model the **entity-relationship diagram** explicitly. The relationships that are easy to get wrong (and expensive to fix later) in a system like this are: many-to-many parent↔student, many-to-many Sheikh↔circle, one-to-many circle↔student with historical transfer tracking (a student's circle history, not just current circle), and append-only tables for anything audit-relevant (attendance, payments, timeline events) rather than tables that get overwritten in place.
+
+---
+
+## Codex Detailed Implementation Expansion — 22. DATABASE & PERMANENT DATA STORAGE
+
+### Detailed implementation interpretation for 22. DATABASE & PERMANENT DATA STORAGE
+This subsection expands the requirement for implementation in Codex while preserving the original requirement above as the source of truth. It clarifies behavior, persistence, validation, and integration without deleting, weakening, or silently changing any stated detail.
+
+The implementation must directly support the following requirement: Real, centralized, persistent database covering all entities — students, parents, Sheikhs, circles, accounts, requests, attendance, memorization, revision, assessments, results, subscriptions, payments, salaries, expenses, messages, notifications, notes, system activity. Nothing lost on refresh, logout, device change, or update. ---
+
+### Codex implementation clarification
+Implement this section as a real part of the working system, not as a decorative mockup. Preserve every named concept, field, role, relationship, workflow, and restriction already stated above. The implementation should expose the requirement through an appropriate interface while also enforcing it in the application logic and database layer. A control that merely looks correct but does nothing is not considered implemented. Forms should validate their inputs, save valid data, show clear errors for invalid data, and update the relevant views without losing previously stored information.
+
+The wording above is the source of truth for this section. When turning it into code, do not simplify away any of the listed details. If the section names several pieces of information, model them separately where appropriate so that each value can be searched, filtered, reported, audited, and related to the correct record. Preserve historical information whenever the requirement calls for history or a timeline. Current values may be shown prominently, but they must not overwrite the underlying historical record when the system is expected to retain past events.
+
+The interface for this area should follow the academy's Arabic RTL, professional Islamic and educational visual language described in the brief. Keep the experience clear for the intended role: administration needs efficient dense controls, Sheikhs need fast operational entry, students need understandable progress, and parents need simple visibility into their children's status. Responsive behavior must remain usable on desktop, tablet, and mobile. Empty, loading, success, validation, and error states should be designed as real states of the application rather than placeholder text.
+
+Data handling in this section must be connected to the central persistent database. Do not use temporary browser-only state as the authoritative record. After refresh, logout, reopening the application, changing devices, or returning later, previously saved information must still be available according to the user's permissions. Create the necessary relationships to the existing entities rather than duplicating the same information in unrelated places. Where a record belongs to a student, parent, Sheikh, circle, account, payment, attendance event, message, or other entity named in the brief, preserve that relationship explicitly.
+
+## 23–24. AUDIT LOG & DATA SECURITY
+
+Full action logging (who/what/changed data/previous vs. new/date/time), preserved and non-deletable. Secure password hashing, RBAC, protected sessions, strict data isolation, soft delete, backups, restore capability.
+
+> **💡 Insight — Because this system holds children's data, treat privacy as a first-class requirement, not just "security"**
+> This point deserves emphasis beyond generic security: the system stores **minors' personal information, photos, location/schedule patterns, and family relationships**. Regardless of which country's specific regulation applies, build to the strictest reasonable standard:
+>
+> - **Least-privilege photo access** — student profile photos should never be publicly accessible by direct URL; serve them only to authenticated, authorized roles.
+> - **Explicit parental consent flag** before a child's photo/achievement is used on the *public* website or gallery (§2A/§29) — this should be a toggleable, revocable setting per student, not an assumed default.
+> - **Data retention & deletion policy** — when a student leaves the academy permanently, define how long their data is retained and under what process a parent can request deletion, balanced against your legitimate need to keep historical academic records.
+> - **Encrypted backups** and restricted backup-file access (§24 already lists backups — extend it to explicitly require encryption at rest for any backup containing personal data).
+
+---
+
+## Codex Detailed Implementation Expansion — 23–24. AUDIT LOG & DATA SECURITY
+
+### Detailed implementation interpretation for 23–24. AUDIT LOG & DATA SECURITY
+This subsection expands the requirement for implementation in Codex while preserving the original requirement above as the source of truth. It clarifies behavior, persistence, validation, and integration without deleting, weakening, or silently changing any stated detail.
+
+The implementation must directly support the following requirement: Full action logging (who/what/changed data/previous vs. new/date/time), preserved and non-deletable. Secure password hashing, RBAC, protected sessions, strict data isolation, soft delete, backups, restore capability. ---
+
+### Codex implementation clarification
+Implement this section as a real part of the working system, not as a decorative mockup. Preserve every named concept, field, role, relationship, workflow, and restriction already stated above. The implementation should expose the requirement through an appropriate interface while also enforcing it in the application logic and database layer. A control that merely looks correct but does nothing is not considered implemented. Forms should validate their inputs, save valid data, show clear errors for invalid data, and update the relevant views without losing previously stored information.
+
+The wording above is the source of truth for this section. When turning it into code, do not simplify away any of the listed details. If the section names several pieces of information, model them separately where appropriate so that each value can be searched, filtered, reported, audited, and related to the correct record. Preserve historical information whenever the requirement calls for history or a timeline. Current values may be shown prominently, but they must not overwrite the underlying historical record when the system is expected to retain past events.
+
+The interface for this area should follow the academy's Arabic RTL, professional Islamic and educational visual language described in the brief. Keep the experience clear for the intended role: administration needs efficient dense controls, Sheikhs need fast operational entry, students need understandable progress, and parents need simple visibility into their children's status. Responsive behavior must remain usable on desktop, tablet, and mobile. Empty, loading, success, validation, and error states should be designed as real states of the application rather than placeholder text.
+
+Data handling in this section must be connected to the central persistent database. Do not use temporary browser-only state as the authoritative record. After refresh, logout, reopening the application, changing devices, or returning later, previously saved information must still be available according to the user's permissions. Create the necessary relationships to the existing entities rather than duplicating the same information in unrelated places. Where a record belongs to a student, parent, Sheikh, circle, account, payment, attendance event, message, or other entity named in the brief, preserve that relationship explicitly.
+
+## 25. SYSTEM INTERCONNECTION
+
+Your three end-to-end flow examples (student session, account registration, Sheikh expense) are excellent and should be treated as the canonical acceptance tests for the build — if a developer/AI implementation can't reproduce these flows exactly, the system isn't done.
+
+> **💡 Insight — Add two more critical flows to your acceptance criteria**
+>
+> 1. **Circle-capacity-to-waitlist flow**: student withdraws → waitlisted student auto-notified → new registration created → old seat closed.
+> 2. **Payment-to-access flow**: subscription becomes overdue by X days → configurable admin decision on whether access is restricted → parent/student notified at each stage. Even if the academy chooses never to lock out a child for non-payment (a reasonable pedagogical choice), the *decision point* should exist in the system rather than being silently absent.
+
+---
+
+## Codex Detailed Implementation Expansion — 25. SYSTEM INTERCONNECTION
+
+### Detailed implementation interpretation for 25. SYSTEM INTERCONNECTION
+This subsection expands the requirement for implementation in Codex while preserving the original requirement above as the source of truth. It clarifies behavior, persistence, validation, and integration without deleting, weakening, or silently changing any stated detail.
+
+The implementation must directly support the following requirement: Your three end-to-end flow examples (student session, account registration, Sheikh expense) are excellent and should be treated as the canonical acceptance tests for the build — if a developer/AI implementation can't reproduce these flows exactly, the system isn't done. ---
+
+### Codex implementation clarification
+Implement this section as a real part of the working system, not as a decorative mockup. Preserve every named concept, field, role, relationship, workflow, and restriction already stated above. The implementation should expose the requirement through an appropriate interface while also enforcing it in the application logic and database layer. A control that merely looks correct but does nothing is not considered implemented. Forms should validate their inputs, save valid data, show clear errors for invalid data, and update the relevant views without losing previously stored information.
+
+The wording above is the source of truth for this section. When turning it into code, do not simplify away any of the listed details. If the section names several pieces of information, model them separately where appropriate so that each value can be searched, filtered, reported, audited, and related to the correct record. Preserve historical information whenever the requirement calls for history or a timeline. Current values may be shown prominently, but they must not overwrite the underlying historical record when the system is expected to retain past events.
+
+The interface for this area should follow the academy's Arabic RTL, professional Islamic and educational visual language described in the brief. Keep the experience clear for the intended role: administration needs efficient dense controls, Sheikhs need fast operational entry, students need understandable progress, and parents need simple visibility into their children's status. Responsive behavior must remain usable on desktop, tablet, and mobile. Empty, loading, success, validation, and error states should be designed as real states of the application rather than placeholder text.
+
+Data handling in this section must be connected to the central persistent database. Do not use temporary browser-only state as the authoritative record. After refresh, logout, reopening the application, changing devices, or returning later, previously saved information must still be available according to the user's permissions. Create the necessary relationships to the existing entities rather than duplicating the same information in unrelated places. Where a record belongs to a student, parent, Sheikh, circle, account, payment, attendance event, message, or other entity named in the brief, preserve that relationship explicitly.
+
+## 26–28. SIMPLE UX, SEARCH & FILTERING, ROLE-BASED NAVIGATION
+
+Your role-specific "golden path" flows and sidebar structures are clear and implementation-ready as written.
+
+> **💡 Insight**
+> Add **global search** (a single search box, role-aware, that can jump to a student/parent/Sheikh/circle from anywhere) in addition to per-page filters — this is one of the highest-value, lowest-cost UX features for daily admin efficiency and is easy to omit if only per-page filtering is specified.
+
+---
+
+## Codex Detailed Implementation Expansion — 26–28. SIMPLE UX, SEARCH & FILTERING, ROLE-BASED NAVIGATION
+
+### Detailed implementation interpretation for 26–28. SIMPLE UX, SEARCH & FILTERING, ROLE-BASED NAVIGATION
+This subsection expands the requirement for implementation in Codex while preserving the original requirement above as the source of truth. It clarifies behavior, persistence, validation, and integration without deleting, weakening, or silently changing any stated detail.
+
+The implementation must directly support the following requirement: Your role-specific "golden path" flows and sidebar structures are clear and implementation-ready as written. ---
+
+### Codex implementation clarification
+Implement this section as a real part of the working system, not as a decorative mockup. Preserve every named concept, field, role, relationship, workflow, and restriction already stated above. The implementation should expose the requirement through an appropriate interface while also enforcing it in the application logic and database layer. A control that merely looks correct but does nothing is not considered implemented. Forms should validate their inputs, save valid data, show clear errors for invalid data, and update the relevant views without losing previously stored information.
+
+The wording above is the source of truth for this section. When turning it into code, do not simplify away any of the listed details. If the section names several pieces of information, model them separately where appropriate so that each value can be searched, filtered, reported, audited, and related to the correct record. Preserve historical information whenever the requirement calls for history or a timeline. Current values may be shown prominently, but they must not overwrite the underlying historical record when the system is expected to retain past events.
+
+The interface for this area should follow the academy's Arabic RTL, professional Islamic and educational visual language described in the brief. Keep the experience clear for the intended role: administration needs efficient dense controls, Sheikhs need fast operational entry, students need understandable progress, and parents need simple visibility into their children's status. Responsive behavior must remain usable on desktop, tablet, and mobile. Empty, loading, success, validation, and error states should be designed as real states of the application rather than placeholder text.
+
+Data handling in this section must be connected to the central persistent database. Do not use temporary browser-only state as the authoritative record. After refresh, logout, reopening the application, changing devices, or returning later, previously saved information must still be available according to the user's permissions. Create the necessary relationships to the existing entities rather than duplicating the same information in unrelated places. Where a record belongs to a student, parent, Sheikh, circle, account, payment, attendance event, message, or other entity named in the brief, preserve that relationship explicitly.
+
+## 29. PUBLIC WEBSITE & ACADEMY REPUTATION
+
+Showcasing achievements, completions, activities, competitions, trips, events, news, Sheikh profiles, programs, and online registration to present the academy as modern, organized, professional, and technology-driven while preserving Islamic educational identity.
+
+> **💡 Insight**
+> Consider an **"Ijazah wall" or completion showcase** — a public, opt-in (see §24 consent note) gallery specifically celebrating full-Quran or Juz-level completions with the student's name and date. This is emotionally powerful for the community, drives word-of-mouth enrollment, and costs little to build once the underlying achievement data already exists in the student timeline.
+
+---
+
+## Codex Detailed Implementation Expansion — 29. PUBLIC WEBSITE & ACADEMY REPUTATION
+
+### Detailed implementation interpretation for 29. PUBLIC WEBSITE & ACADEMY REPUTATION
+This subsection expands the requirement for implementation in Codex while preserving the original requirement above as the source of truth. It clarifies behavior, persistence, validation, and integration without deleting, weakening, or silently changing any stated detail.
+
+The implementation must directly support the following requirement: Showcasing achievements, completions, activities, competitions, trips, events, news, Sheikh profiles, programs, and online registration to present the academy as modern, organized, professional, and technology-driven while preserving Islamic educational identity. ---
+
+### Codex implementation clarification
+Implement this section as a real part of the working system, not as a decorative mockup. Preserve every named concept, field, role, relationship, workflow, and restriction already stated above. The implementation should expose the requirement through an appropriate interface while also enforcing it in the application logic and database layer. A control that merely looks correct but does nothing is not considered implemented. Forms should validate their inputs, save valid data, show clear errors for invalid data, and update the relevant views without losing previously stored information.
+
+The wording above is the source of truth for this section. When turning it into code, do not simplify away any of the listed details. If the section names several pieces of information, model them separately where appropriate so that each value can be searched, filtered, reported, audited, and related to the correct record. Preserve historical information whenever the requirement calls for history or a timeline. Current values may be shown prominently, but they must not overwrite the underlying historical record when the system is expected to retain past events.
+
+The interface for this area should follow the academy's Arabic RTL, professional Islamic and educational visual language described in the brief. Keep the experience clear for the intended role: administration needs efficient dense controls, Sheikhs need fast operational entry, students need understandable progress, and parents need simple visibility into their children's status. Responsive behavior must remain usable on desktop, tablet, and mobile. Empty, loading, success, validation, and error states should be designed as real states of the application rather than placeholder text.
+
+## 30–31. FINAL PROJECT GOAL & FINAL RESULT
+
+Your synthesis — a single integrated ecosystem connecting Administration, Sheikh, Student, and Parent across memorization, revision, attendance, assessments, subscriptions, payments, salaries, expenses, messages, notifications, reports, history, accounts, and permissions — is the correct north star and should be stated to any development team or AI exactly as you've written it.
+
+---
+
+## Codex Detailed Implementation Expansion — 30–31. FINAL PROJECT GOAL & FINAL RESULT
+
+### Detailed implementation interpretation for 30–31. FINAL PROJECT GOAL & FINAL RESULT
+This subsection expands the requirement for implementation in Codex while preserving the original requirement above as the source of truth. It clarifies behavior, persistence, validation, and integration without deleting, weakening, or silently changing any stated detail.
+
+The implementation must directly support the following requirement: Your synthesis — a single integrated ecosystem connecting Administration, Sheikh, Student, and Parent across memorization, revision, attendance, assessments, subscriptions, payments, salaries, expenses, messages, notifications, reports, history, accounts, and permissions — is the correct north star and should be stated to any development team or AI exactly as you've written it. ---
+
+### Codex implementation clarification
+Implement this section as a real part of the working system, not as a decorative mockup. Preserve every named concept, field, role, relationship, workflow, and restriction already stated above. The implementation should expose the requirement through an appropriate interface while also enforcing it in the application logic and database layer. A control that merely looks correct but does nothing is not considered implemented. Forms should validate their inputs, save valid data, show clear errors for invalid data, and update the relevant views without losing previously stored information.
+
+The wording above is the source of truth for this section. When turning it into code, do not simplify away any of the listed details. If the section names several pieces of information, model them separately where appropriate so that each value can be searched, filtered, reported, audited, and related to the correct record. Preserve historical information whenever the requirement calls for history or a timeline. Current values may be shown prominently, but they must not overwrite the underlying historical record when the system is expected to retain past events.
+
+The interface for this area should follow the academy's Arabic RTL, professional Islamic and educational visual language described in the brief. Keep the experience clear for the intended role: administration needs efficient dense controls, Sheikhs need fast operational entry, students need understandable progress, and parents need simple visibility into their children's status. Responsive behavior must remain usable on desktop, tablet, and mobile. Empty, loading, success, validation, and error states should be designed as real states of the application rather than placeholder text.
+
+## 32. IMPORTANT FINAL REQUIREMENT (unchanged, restated for emphasis)
+
+The system must be **functional**, not a visual prototype. All buttons, forms, authentication flows, approval processes, dashboards, permissions, calculations, relationships, reports, and database operations must actually work together end-to-end. Self-registration with admin-gated approval is mandatory and non-negotiable.
+
+---
+
+## Codex Detailed Implementation Expansion — 32. IMPORTANT FINAL REQUIREMENT (unchanged, restated for emphasis)
+
+### Detailed implementation interpretation for 32. IMPORTANT FINAL REQUIREMENT (unchanged, restated for emphasis)
+This subsection expands the requirement for implementation in Codex while preserving the original requirement above as the source of truth. It clarifies behavior, persistence, validation, and integration without deleting, weakening, or silently changing any stated detail.
+
+The implementation must directly support the following requirement: The system must be **functional**, not a visual prototype. All buttons, forms, authentication flows, approval processes, dashboards, permissions, calculations, relationships, reports, and database operations must actually work together end-to-end. Self-registration with admin-gated approval is mandatory and non-negotiable. ---
+
+### Codex implementation clarification
+Implement this section as a real part of the working system, not as a decorative mockup. Preserve every named concept, field, role, relationship, workflow, and restriction already stated above. The implementation should expose the requirement through an appropriate interface while also enforcing it in the application logic and database layer. A control that merely looks correct but does nothing is not considered implemented. Forms should validate their inputs, save valid data, show clear errors for invalid data, and update the relevant views without losing previously stored information.
+
+The wording above is the source of truth for this section. When turning it into code, do not simplify away any of the listed details. If the section names several pieces of information, model them separately where appropriate so that each value can be searched, filtered, reported, audited, and related to the correct record. Preserve historical information whenever the requirement calls for history or a timeline. Current values may be shown prominently, but they must not overwrite the underlying historical record when the system is expected to retain past events.
+
+The interface for this area should follow the academy's Arabic RTL, professional Islamic and educational visual language described in the brief. Keep the experience clear for the intended role: administration needs efficient dense controls, Sheikhs need fast operational entry, students need understandable progress, and parents need simple visibility into their children's status. Responsive behavior must remain usable on desktop, tablet, and mobile. Empty, loading, success, validation, and error states should be designed as real states of the application rather than placeholder text.
+
+## 33. ADDITIONAL STRATEGIC CONSIDERATIONS *(new section)*
+
+These didn't map cleanly onto your existing numbering but are worth deciding before development starts, since each is far cheaper to plan for now than to retrofit:
+
+**Cultural/calendar fit**
+
+- Support the **Hijri calendar alongside Gregorian** throughout (schedules, birthdates, reports) — a small addition that meaningfully increases trust and usability for an Islamic institution.
+- Build a **Ramadan schedule mode**: many Quran academies shift circle times and intensify memorization targets during Ramadan; a toggle that lets admin temporarily override normal schedules (and reverts cleanly afterward) avoids a month of manual workarounds every year.
+- Consider whether prayer-time-aware scheduling (avoiding session conflicts with Maghrib/Isha, common class times) is worth a lightweight prayer-time API integration.
+
+**Technical architecture**
+
+- Pick a stack with a **real relational database** (PostgreSQL or MySQL) given how relational this data model is (many-to-many parent/student, Sheikh/circle, financial ledgers). A NoSQL-first approach would fight you constantly here.
+- Plan for **multi-branch/multi-campus** support even if launching with one location — academies of this kind frequently expand, and "which branch" is much easier to add as a first-class field now than as a retrofit.
+- Define a **notification queue/worker** architecture early (rather than sending SMS/WhatsApp synchronously in request handlers) so message sending never blocks or breaks core actions like attendance recording.
+
+**Operational realism**
+
+- Add a **staff onboarding/offboarding checklist** built into the Sheikh account lifecycle — what happens to a departing Sheikh's assigned circles, historical attribution, and outstanding dues.
+- Budget realistically for **ongoing costs**: SMS/WhatsApp API fees scale with student count, hosting/backup costs scale with data volume (photos and documents especially), and someone will need to own approvals/moderation as an ongoing operational role, not a one-time setup task.
+
+**Testing & rollout**
+
+- Given the number of interdependent modules, plan a **phased rollout**: e.g., Phase 1 = registration, approval, circles, attendance; Phase 2 = memorization/revision/assessments; Phase 3 = finance (salaries/subscriptions/payments); Phase 4 = messaging/reports/public site polish. Trying to launch all 30+ sections simultaneously is a major delivery risk.
+- Treat the three flows in §25 (plus the two added above) as your **integration test suite** — if an AI or developer builds each module in isolation without validating these flows end-to-end, "interconnection" will quietly fail even though every individual page looks correct.
+
+---
+
+*This enhanced brief keeps every original requirement intact while adding the operational, security, cultural, and architectural decisions that most commonly get missed — or discovered painfully late — in real-world school/academy management platforms. Treat the 💡 Insight boxes as recommendations to confirm or consciously decline, not mandatory additions; you know the academy's actual constraints (budget, staff capacity, timeline) better than any generic best-practice list.*
+
+## Codex Detailed Implementation Expansion — 33. ADDITIONAL STRATEGIC CONSIDERATIONS *(new section)*
+
+### Detailed implementation interpretation for 33. ADDITIONAL STRATEGIC CONSIDERATIONS *(new section)*
+This subsection expands the requirement for implementation in Codex while preserving the original requirement above as the source of truth. It clarifies behavior, persistence, validation, and integration without deleting, weakening, or silently changing any stated detail.
+
+The implementation must directly support the following requirement: These didn't map cleanly onto your existing numbering but are worth deciding before development starts, since each is far cheaper to plan for now than to retrofit: **Cultural/calendar fit** - Support the **Hijri calendar alongside Gregorian** throughout (schedules, birthdates, reports) — a small addition that meaningfully increases trust and usability for an Islamic institution. - Build a **Ramadan schedule mode**: many Quran academies shift circle times and intensify memorization targets during Ramadan; a toggle that lets admin temporarily override normal schedules (and reverts cleanly afterward) avoids a month of manual workarounds every year. - Consider whether prayer-time-aware scheduling (avoiding session conflicts with Maghrib/Isha, common class times) is worth a lightweight prayer-time API integration. **Technical architecture** - Pick a stack with a **real relational database** (PostgreSQL or MySQL) given how relational this data model is (many-to-many parent/student, Sheikh/circle, financial ledgers). A NoSQL-first approach would fight you constantly here. - Plan for **multi-branch/multi-campus** support even if launching with one location — academies of this kind frequently expand, and "which branch" is much easier to add as a first-class field now than as a retrofit. - Define a **notification queue/worker** architecture early (rather than sending SMS/WhatsApp synchronously in request handlers) so message sending never blocks or breaks core actions like attendance recording. **Operational realism** - Add a **staff onboarding/offboarding checklist** built into the Sheikh account lifecycle — what happens to a departing Sheikh's assigned circles, historical attribution, and outstanding dues. - Budget realistically for **ongoing costs**: SMS/WhatsApp API fees scale with student count, hosting/backup costs scale with data volume (photos and documents especially), and someone will need to own approvals/moderation as an ongoing operational role, not a one-time setup task. **Testing & rollout** - Given the number of interdependent modules, plan a **phased rollout**: e.g., Phase 1 = registration, approval, circles, attendance; Phase 2 = memorization/revision/assessments; Phase 3 = finance (salaries/subscriptions/payments); Phase 4 = messaging/reports/public site polish. Trying to launch all 30+ sections simultaneously is a major delivery risk. - Treat the three flows in §25 (plus the two added above) as your **integration test suite** — if an AI or developer builds each module in isolation without validating these flows end-to-end, "interconnection" will quietly fail even though every individual page looks correct. --- *This enhanced brief keeps every original requirement intact while adding the operational, security, cultural, and architectural decisions that most commonly get missed — or discovered painfully late — in real-world school/academy management platforms. Treat the 💡 Insight boxes as recommendations to confirm or consciously decline, not mandatory additions; you know the academy's actual constraints (budget, staff capacity, timeline) better than any generic best-practice list.*
+
+### Codex implementation clarification
+Implement this section as a real part of the working system, not as a decorative mockup. Preserve every named concept, field, role, relationship, workflow, and restriction already stated above. The implementation should expose the requirement through an appropriate interface while also enforcing it in the application logic and database layer. A control that merely looks correct but does nothing is not considered implemented. Forms should validate their inputs, save valid data, show clear errors for invalid data, and update the relevant views without losing previously stored information.
+
+The wording above is the source of truth for this section. When turning it into code, do not simplify away any of the listed details. If the section names several pieces of information, model them separately where appropriate so that each value can be searched, filtered, reported, audited, and related to the correct record. Preserve historical information whenever the requirement calls for history or a timeline. Current values may be shown prominently, but they must not overwrite the underlying historical record when the system is expected to retain past events.
+
+The interface for this area should follow the academy's Arabic RTL, professional Islamic and educational visual language described in the brief. Keep the experience clear for the intended role: administration needs efficient dense controls, Sheikhs need fast operational entry, students need understandable progress, and parents need simple visibility into their children's status. Responsive behavior must remain usable on desktop, tablet, and mobile. Empty, loading, success, validation, and error states should be designed as real states of the application rather than placeholder text.
+
+Data handling in this section must be connected to the central persistent database. Do not use temporary browser-only state as the authoritative record. After refresh, logout, reopening the application, changing devices, or returning later, previously saved information must still be available according to the user's permissions. Create the necessary relationships to the existing entities rather than duplicating the same information in unrelated places. Where a record belongs to a student, parent, Sheikh, circle, account, payment, attendance event, message, or other entity named in the brief, preserve that relationship explicitly.
+
+## FINAL CODEX ACCEPTANCE STANDARD
+
+The finished application must be a complete, functional management platform for Dar Al-Tifl Al-Muslim, not a visual prototype. The original requirements remain authoritative. Every module must use the real persistent database, respect role-based and record-level permissions, preserve historical records where required, and connect to the other modules so the system behaves as one ecosystem.
+
+Codex should verify the complete behavior from authentication and approval through account linking, circle assignment, attendance, memorization, revision, assessments, subscriptions, payments, Sheikh attendance, salary calculation, expenses, messaging, notifications, dashboards, reports, audit logs, backups, and the public website. Buttons must perform their stated actions; forms must validate and save; calculations must use stored data; reports must reflect the same data used by dashboards; and unauthorized requests must be rejected server-side.
+
+The Arabic RTL experience, professional Islamic and educational identity, responsive behavior, child-and-parent usability, privacy expectations, and the strategic recommendations in the Insight boxes should remain visible throughout implementation. Insight boxes are recommendations to confirm or consciously decline, while the original mandatory requirements remain non-negotiable.
+
+Before completion, test the canonical end-to-end flows in the brief, including the student session flow, account registration and approval flow, Sheikh expense flow, circle-capacity-to-waitlist flow, and payment-to-access flow. Verify persistence after refresh, logout, device change, and normal updates, and verify that historical attribution and audit records remain correct.
+
+The final standard is simple: the system must work as one integrated academy platform, with real data, real permissions, real calculations, real workflows, and permanent storage.
+
+The build should remain maintainable: keep code organized by feature, use clear naming, separate presentation from business logic, document data relationships, and make configuration values easy to manage. Do not introduce a replacement architecture that conflicts with the brief; extend it carefully so academy growth can be supported without sacrificing the requirements already defined.

@@ -1,0 +1,55 @@
+{
+  "version": "7",
+  "dialect": "sqlite",
+  "entries": [
+    {
+      "idx": 0,
+      "version": "6",
+      "when": 1789509213597,
+      "tag": "0000_wide_ogun",
+      "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "6",
+      "when": 1789569449887,
+      "tag": "0001_fixed_mattie_franklin",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "6",
+      "when": 1789569468673,
+      "tag": "0002_integrity_guards",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "6",
+      "when": 1789639779515,
+      "tag": "0003_registration_review",
+      "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "6",
+      "when": 1789664134048,
+      "tag": "0004_circle_staff_attendance",
+      "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "6",
+      "when": 1790237652005,
+      "tag": "0005_assistant_registration",
+      "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "6",
+      "when": 1790268445911,
+      "tag": "0006_shared_phone",
+      "breakpoints": true
+    }
+  ]
+}
