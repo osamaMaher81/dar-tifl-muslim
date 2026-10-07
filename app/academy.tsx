@@ -1,135 +1,1512 @@
 'use client';
-import {DarSignature,SiteFooter} from './brand-design';
+import {SiteFooter} from './brand-design';
 import RoleHome from './role-home';
 import TeacherLesson from './teacher-lesson';
-import {ratings,revisionTypes,planTypes,learningSummary} from '@/lib/learning';
-import React,{useEffect,useState,useMemo} from 'react';
-import {BookOpen,LayoutDashboard,Users,GraduationCap,CalendarCheck,BookMarked,Wallet,Receipt,MessagesSquare,Bell,ChartNoAxesCombined,Settings,Globe,Search,Plus,ArrowUpLeft,ChevronLeft,LogOut,Clock,Check,ShieldCheck,Download,Printer,Link2,FileText,ClipboardList,HeartHandshake,LoaderCircle,RefreshCw,UserRound,CalendarDays,Send,ArrowRight} from 'lucide-react';
-import {Sidebar,SidebarProvider,SidebarContent,SidebarHeader,SidebarFooter,SidebarGroup,SidebarGroupLabel,SidebarMenu,SidebarMenuItem,SidebarMenuButton,SidebarInset,SidebarTrigger} from '@/components/ui/sidebar';
-import {Dialog,DialogContent,DialogHeader,DialogTitle,DialogDescription} from '@/components/ui/dialog';
-import {Select,SelectTrigger,SelectValue,SelectContent,SelectItem} from '@/components/ui/select';
-import {Table,TableBody,TableCell,TableHead,TableHeader,TableRow} from '@/components/ui/table';
-import {Tabs,TabsList,TabsTrigger} from '@/components/ui/tabs';
+import {learningSummary, planTypes, ratings, revisionTypes} from '@/lib/learning';
+import React, {useEffect, useState} from 'react';
+import {
+    ArrowRight,
+    ArrowUpLeft,
+    Bell,
+    BookMarked,
+    BookOpen,
+    CalendarCheck,
+    ChartNoAxesCombined,
+    Check,
+    ChevronLeft,
+    ClipboardList,
+    Clock,
+    Download,
+    Globe,
+    GraduationCap,
+    LayoutDashboard,
+    Link2,
+    LoaderCircle,
+    LogOut,
+    MessagesSquare,
+    Plus,
+    Printer,
+    Receipt,
+    RefreshCw,
+    Search,
+    Send,
+    Settings,
+    ShieldCheck,
+    UserRound,
+    Users,
+    Wallet
+} from 'lucide-react';
+import {
+    Sidebar,
+    SidebarContent,
+    SidebarFooter,
+    SidebarGroup,
+    SidebarHeader,
+    SidebarInset,
+    SidebarMenu,
+    SidebarMenuButton,
+    SidebarMenuItem,
+    SidebarProvider,
+    SidebarTrigger
+} from '@/components/ui/sidebar';
+import {Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle} from '@/components/ui/dialog';
+import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from '@/components/ui/select';
+import {Table, TableBody, TableCell, TableHead, TableHeader, TableRow} from '@/components/ui/table';
+import {Tabs, TabsList, TabsTrigger} from '@/components/ui/tabs';
 import {Checkbox} from '@/components/ui/checkbox';
 import {Switch} from '@/components/ui/switch';
 import {Progress} from '@/components/ui/progress';
 import {Skeleton} from '@/components/ui/skeleton';
-import {Toaster,toast} from 'sonner';
-const api='/api/app';
-const roleNames:any={admin:'الإدارة',sheikh:'الشيخ',assistant:'المساعد',student:'الطالب',parent:'ولي الأمر'};
-const kindNames:any={registration:'طلب تسجيل',attendance:'الحضور والانصراف',memorization:'الحفظ الجديد',revision:'المراجعة',assessment:'التقييمات',plan:'خطة الحفظ',subscription:'الاشتراكات',payment:'المدفوعات',expense:'مصروفات المشايخ',salary:'كشوف المرتبات',salary_config:'نظام المرتب',staff_attendance:'حضور الفريق',message:'الرسائل',notification:'الإشعارات',note:'الملاحظات',transfer:'نقل وتغيير مستوى',waitlist:'قائمة الانتظار',content:'محتوى الموقع'};
-const statuses:any={active:'نشط',pending:'قيد المراجعة',rejected:'مرفوض',suspended:'موقوف',approved:'معتمد',due:'مستحق',paid:'مسدد',partial:'مسدد جزئيًا',overdue:'متأخر',assigned:'مطلوب',completed:'مكتمل',locked:'مقفل',open:'حاضر الآن',closed:'مكتمل',draft:'مسودة',published:'منشور',waiting:'في الانتظار',notified:'تم الإشعار',read:'مقروء',unread:'جديد',void:'ملغي',paused:'متوقف',archived:'مؤرشف'};
-const fmt=(n:number)=>new Intl.NumberFormat('ar-EG',{maximumFractionDigits:0}).format(n||0);
-const cash=(n:number)=>new Intl.NumberFormat('ar-EG',{style:'currency',currency:'EGP'}).format((n||0)/100);
-const today=()=>new Date().toISOString().slice(0,10);
-const pretty=(d:string)=>d?new Date(d.length===10?d+'T12:00:00':d).toLocaleDateString('ar-EG',{day:'numeric',month:'short',year:'numeric'}):'—';
-async function call(action:string,data:any={}){const r=await fetch(api,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({action,data})});const v:any=await r.json();if(!r.ok)throw new Error(v.error);return v;}
-function Badge({value}:{value:string}){return <span className={`badge status-${value}`}>{statuses[value]||value}</span>;}
-function Choice({value,onChange,options,placeholder='اختر',id}:{value:any,onChange:(v:string)=>void,options:any[],placeholder?:string,id?:string}){return <Select dir="rtl" value={String(value||'__none')} onValueChange={v=>onChange(v==='__none'?'':v)}><SelectTrigger id={id} className="choice"><SelectValue placeholder={placeholder}/></SelectTrigger><SelectContent><SelectItem value="__none">{placeholder}</SelectItem>{options.filter(x=>x.value).map(x=><SelectItem key={x.value} value={String(x.value)}>{x.label}</SelectItem>)}</SelectContent></Select>;}
-function Empty({title='لا توجد سجلات بعد',text='ستظهر البيانات هنا بعد تسجيلها.',action}:{title?:string,text?:string,action?:React.ReactNode}){return <div className="empty"><div className="empty-icon"><BookOpen size={28}/></div><h3>{title}</h3><p>{text}</p>{action}</div>;}
-function Logo(){return <div className="brand"><img src="/logo.jpg" alt="شعار دار الطفل المسلم"/><div><strong>دار الطفل المسلم</strong><small>لنشأة جيل أفضل</small></div></div>;}
-const navs:any[]=[['dashboard','نظرة عامة',LayoutDashboard,'الرئيسية'],['students','الطلاب',Users,'إدارة الدار'],['circles','الحلقات',BookOpen,'إدارة الدار'],['accounts','طلبات وحسابات',ShieldCheck,'إدارة الدار'],['requests','طلبات التسجيل',ClipboardList,'إدارة الدار'],['attendance','الحضور والانصراف',CalendarCheck,'المتابعة التعليمية'],['learning','الحفظ والمراجعة',BookMarked,'المتابعة التعليمية'],['finance','الاشتراكات والمدفوعات',Wallet,'الشؤون المالية'],['staff','الفريق والمرتبات',GraduationCap,'الشؤون المالية'],['messages','الرسائل والإشعارات',MessagesSquare,'التواصل والمتابعة'],['reports','التقارير',ChartNoAxesCombined,'التواصل والمتابعة'],['content','الموقع التعريفي',Globe,'الإعدادات'],['audit','سجل النشاط',ClipboardList,'الإعدادات'],['settings','الإعدادات',Settings,'الإعدادات']];
-export default function Academy({portal}:{portal?:string}){
-const [state,setState]=useState<any>(null),[loading,setLoading]=useState(true),[error,setError]=useState(''),[view,setView]=useState('dashboard'),[search,setSearch]=useState(''),[tab,setTab]=useState('memorization'),[selected,setSelected]=useState(''),[modal,setModal]=useState<any>(null),[values,setValues]=useState<any>({}),[busy,setBusy]=useState(false),[formError,setFormError]=useState(''),[dateFrom,setDateFrom]=useState(''),[dateTo,setDateTo]=useState(''),[reportKind,setReportKind]=useState('attendance'),[sort,setSort]=useState('newest');
-async function refresh(){try{const r=await fetch(api);const d:any=await r.json();if(!r.ok)throw new Error(d.error);setState(d);setError('');}catch(e:any){setError(e.message);}finally{setLoading(false);}}
-useEffect(()=>{refresh();const timer=setInterval(()=>{if(document.visibilityState==='visible')refresh();},30000);const focus=()=>refresh();window.addEventListener('focus',focus);return()=>{clearInterval(timer);window.removeEventListener('focus',focus);};},[]);
-const go=(v:string)=>{setView(v);setSearch('');if(!['parent','student'].includes(state?.user?.role))setSelected('');setDateFrom('');setDateTo('');setTab(v==='finance'?'subscription':v==='staff'?'staff_attendance':v==='messages'?'message':'memorization');};
-useEffect(()=>{const c=(document as any).modelContext;if(!c?.registerTool)return;const ac=new AbortController();try{Promise.resolve(c.registerTool({name:'navigate_academy',description:'Open an academy section without modifying saved records',inputSchema:{type:'object',properties:{section:{type:'string',enum:navs.map(n=>n[0])}},required:['section'],additionalProperties:false},annotations:{readOnlyHint:true},execute:async (i:any)=>{if(!navs.some(n=>n[0]===i.section))throw new Error('Unknown section');go(i.section);return {section:i.section};}},{signal:ac.signal})).catch(()=>{});}catch{}return()=>ac.abort();},[]);
-const u=state?.user, isAdmin=u?.role==='admin',isTeacher=['sheikh','assistant'].includes(u?.role),canTeach=isAdmin||isTeacher;
-const students=state?.students||[],circles=state?.circles||[],users=state?.users||[],records=(state?.records||[]).filter((r:any)=>r.status!=='void');
-useEffect(()=>{if(['parent','student'].includes(u?.role)&&students.length&&!students.some((s:any)=>s.id===selected))setSelected(students[0].id);},[state,selected]);
-const sheikhs=users.filter((x:any)=>['sheikh','assistant'].includes(x.role)&&x.status==='active');
-const studentName=(id:string)=>students.find((s:any)=>s.id===id)?.name||'—';const circleName=(id:string)=>circles.find((c:any)=>c.id===id)?.name||'—';const userName=(id:string)=>users.find((x:any)=>x.id===id)?.name||'حساب الدار';
-const studentOptions=students.map((s:any)=>({value:s.id,label:s.name})),circleOptions=circles.map((s:any)=>({value:s.id,label:s.name})),teacherOptions=sheikhs.map((s:any)=>({value:s.id,label:s.name+' · '+roleNames[s.role]}));
-const sum=(kind:string)=>records.filter((r:any)=>r.kind===kind).reduce((n:number,r:any)=>n+r.amount,0);
-const paidFor=(id:string)=>records.filter((r:any)=>r.kind==='payment'&&r.parent_id===id).reduce((n:number,r:any)=>n+r.amount,0);
-const outstanding=Math.max(0,sum('subscription')-sum('payment'));
-const visibleNav=navs.filter(n=>isAdmin||(!['accounts','content','audit','settings'].includes(n[0])&&(isTeacher?n[0]!=='finance'&&(u.role!=='assistant'||n[0]!=='requests'):!['staff','requests'].includes(n[0]))));
-function open(type:string,data:any={}){setFormError('');setModal({type});setValues({date:today(),...data});}
-async function run(action:string,data:any){setBusy(true);try{await call(action,data);toast.success('تم الحفظ بنجاح');await refresh();}catch(e:any){toast.error(e.message);}finally{setBusy(false);}}
-const opt=(vs:string[])=>vs.map(v=>({value:v,label:statuses[v]||v}));
-const field=(name:string,label:string,type='text',options?:any[],required=false)=>({name,label,type,options,required});
-function formFields(type:string):any[]{switch(type){
-case 'connect_account':{const account=users.find((a:any)=>a.id===values.user_id);return [field('user_id','الحساب','select',users.filter((a:any)=>a.role!=='admin').map((a:any)=>({value:a.id,label:`${a.name} · ${roleNames[a.role]}`})),true),...(['sheikh','assistant'].includes(account?.role)?[field('circle_ids','الحلقات المسندة للحساب','multi',circleOptions)]:account?.role==='parent'?[field('student_ids','الأبناء المرتبطون بولي الأمر','multi',studentOptions)]:account?.role==='student'?[field('new_profile','إنشاء ملف من بيانات التسجيل','check'),...(values.new_profile?[field('level','مستوى الطالب','text',undefined,true),field('circle_id','الحلقة','select',circleOptions,true)]:[field('student_id','ملف الطالب الموجود','select',studentOptions,true)])]:[])];}
-case 'checkout':return [field('time','وقت الانصراف','time',undefined,true)];
-case 'student':return [field('name','اسم الطالب كاملًا','text',undefined,true),field('phone','رقم الهاتف','tel'),field('birthdate','تاريخ الميلاد','date'),field('gender','النوع','select',opt(['ذكر','أنثى'])),field('guardian_name','اسم ولي الأمر'),field('guardian_phone','هاتف ولي الأمر','tel'),field('address','العنوان'),field('school','المدرسة'),field('circle_id','الحلقة','select',circleOptions),field('level','المستوى','text',undefined,true),field('enrollment_date','تاريخ الالتحاق','date'),field('status','حالة الطالب','select',opt(['active','paused','archived'])),field('notes','ملاحظات','textarea'),field('consent','موافقة ولي الأمر على نشر الإنجازات والصور','check')];
-case 'circle':return [field('name','اسم الحلقة','text',undefined,true),field('level','المستوى','text',undefined,true),field('type','نوع الحلقة','select',opt(['حضوري','أونلاين'])),field('schedule','الأيام والمواعيد','text',undefined,true),field('duration','مدة الحلقة بالدقائق','number'),field('capacity','الحد الأقصى للطلاب','number',undefined,true),field('fee','قيمة الاشتراك بالجنيه','number'),field('branch','الفرع'),field('ramadan_schedule','مواعيد رمضان'),field('teachers','المشايخ والمساعدون بالحَلقة','multi',teacherOptions),field('status','الحالة','select',opt(['active','paused','archived']))];
-case 'link':return [field('user_id','حساب الطالب أو ولي الأمر','select',users.filter((a:any)=>['student','parent'].includes(a.role)&&a.status==='active').map((a:any)=>({value:a.id,label:`${a.name} · ${roleNames[a.role]}`})),true),field('student_id','ملف الطالب','select',studentOptions,true)];
-case 'staff_attendance':return [...(isAdmin?[field('user_id','الشيخ أو المساعد','select',teacherOptions,true)]:[]),field('mode','العملية','select',[{value:'in',label:'تسجيل حضور'},{value:'out',label:'تسجيل انصراف'},{value:'absent',label:'تسجيل غياب'},{value:'excused',label:'غياب بعذر'}],true),...(values.mode!=='out'?[field('circle_id','الحلقة','select',circles.filter((c:any)=>c.status==='active'&&(state.assignments||[]).some((a:any)=>a.circle_id===c.id&&a.user_id===(isAdmin?values.user_id:u.id))).map((c:any)=>({value:c.id,label:c.name})),true)]:[]),...(values.mode==='in'?[]:['absent','excused'].includes(values.mode)?[field('date','التاريخ','date',undefined,true),field('reason','سبب الغياب')]:[])];
-case 'salary':return [field('user_id','الشيخ أو المساعد','select',teacherOptions,true),field('month','شهر المرتب','month',undefined,true),field('additions','الإضافات بالجنيه','number'),field('deductions','الخصومات بالجنيه','number'),field('notes','ملاحظات التسوية','textarea')];
-case 'password':return [...(values.user_id?[field('user_id','الحساب','select',users.map((x:any)=>({value:x.id,label:x.name})),true)]:[field('current','كلمة المرور الحالية','password',undefined,true)]),field('password','كلمة المرور الجديدة','password',undefined,true),field('confirm','تأكيد كلمة المرور','password',undefined,true)];
-}
-let fs:any[]=[];
-if(['attendance','memorization','revision','assessment','plan','subscription','payment','note','waitlist'].includes(type))fs.push(field('student_id','الطالب','select',studentOptions,true));
-if(!['message','content','salary_config'].includes(type))fs.push(field('date','التاريخ','date',undefined,true));
-if(type==='attendance')fs.push(field('attendance','حالة الحضور','select',opt(['حاضر','غائب','متأخر','بعذر']),true),field('check_in','وقت الحضور','time'),field('check_out','وقت الانصراف','time'),field('notes','ملاحظات','textarea'));
-if(['memorization','revision','plan'].includes(type))fs.push(...(type==='revision'?[field('revision_type','نوع الماضي','select',opt(revisionTypes),true)]:[]),field('surah','اسم السورة','text',undefined,true),field('from','من آية','number',undefined,true),field('to','إلى آية','number',undefined,true),...(type==='plan'?[field('due','موعد التسميع','date',undefined,true),field('plan_type','نوع المطلوب','select',opt(planTypes),true)]:[field('rating','التقدير','select',opt(ratings),true),...(type==='revision'?[field('percentage','النسبة المئوية (اختياري)','number')]:[])]),field('notes','الملاحظات','textarea'));
-if(type==='assessment')fs.push(field('from_surah','من سورة','text',undefined,true),field('to_surah','إلى سورة','text',undefined,true),field('score','نتيجة الاختبار ٪','number',undefined,true),field('notes','ملاحظات','textarea'));
-if(type==='note')fs.push(field('text','الملاحظة','textarea',undefined,true));
-if(type==='subscription')fs.push(field('title','اسم الاشتراك / الفترة','text',undefined,true),field('amount','القيمة بالجنيه','number',undefined,true),field('due','تاريخ الاستحقاق','date',undefined,true),field('subscription_type','النوع','select',opt(['شهري','دورة','سنوي'])),field('notes','ملاحظات'));
-if(type==='payment')fs.push(field('parent_id','الاشتراك','select',records.filter((r:any)=>r.kind==='subscription'&&r.student_id===values.student_id&&paidFor(r.id)<r.amount).map((r:any)=>({value:r.id,label:`${r.data.title} · المتبقي ${cash(r.amount-paidFor(r.id))}`})),true),field('amount','المبلغ المدفوع بالجنيه','number',undefined,true),field('method','طريقة الدفع','select',opt(['نقدي','تحويل بنكي','محفظة إلكترونية']),true),field('reference','رقم المرجع / الإيصال'),field('notes','ملاحظات'));
-if(type==='expense')fs.push(...(isAdmin?[field('user_id','الشيخ أو المساعد','select',teacherOptions,true)]:[]),field('amount','قيمة المصروف بالجنيه','number',undefined,true),field('reason','سبب المصروف','text',undefined,true),field('category','نوع المصروف','select',opt(['انتقالات','مستلزمات تعليمية','أنشطة','أخرى']),true),field('receipt','صورة الإيصال أو PDF','file'),field('notes','ملاحظات','textarea'));
-if(type==='message')fs.push(...(isAdmin?[field('user_id','مستلم محدد (أو اتركه للجميع)','select',users.filter((x:any)=>x.status==='active').map((x:any)=>({value:x.id,label:x.name})))]:[]),...(canTeach?[field('circle_id','حلقة محددة','select',circleOptions,isTeacher)]:[]),field('text','الرسالة','textarea',undefined,true));
-if(type==='content')fs.push(field('category','القسم','select',opt(['عن الدار','برنامج','أخبار','نشاط','إنجاز','شيخ','تواصل','معرض']),true),field('title','العنوان','text',undefined,true),field('text','المحتوى','textarea',undefined,true),field('receipt','صورة القسم','file'),field('student_id','الطالب (للإنجازات)','select',studentOptions),field('status','حالة النشر','select',opt(['draft','published'])));
-if(type==='waitlist')fs.push(field('circle_id','الحلقة المطلوبة','select',circleOptions,true),field('notes','ملاحظات'));
-if(type==='salary_config')fs.push(field('user_id','الشيخ أو المساعد','select',teacherOptions,true),field('date','يسري من','date',undefined,true),field('method','نظام الحساب','select',[{value:'session',label:'بالحلقة حسب الحضور'},{value:'hourly',label:'بالساعة'},{value:'monthly',label:'شهري ثابت'},{value:'mixed',label:'ثابت + ساعات'}],true),...(['session','hourly','mixed'].includes(values.method)?[field('rate',values.method==='session'?'أجر الحلقة الواحدة بالجنيه':'أجر الساعة بالجنيه','number',undefined,true)]:[]),...(['monthly','mixed'].includes(values.method)?[field('fixed','الراتب الثابت بالجنيه','number',undefined,true)]:[]));
-return fs;}
-async function save(e:React.FormEvent){e.preventDefault();setBusy(true);setFormError('');try{const t=modal.type;const direct=['connect_account','checkout','student','circle','link','staff_attendance','salary','password'];if(direct.includes(t))await call(t,values);else {const {student_id,circle_id,user_id,date,amount,parent_id,status,...data}=values;await call('record',{kind:t,student_id,circle_id,user_id,date,amount,parent_id,status,data});}await refresh();setModal(null);toast.success('تم الحفظ بنجاح');}catch(e:any){setFormError(e.message);}finally{setBusy(false);}}
-function matches(x:any){return !search||JSON.stringify(x).toLowerCase().includes(search.toLowerCase());}
-function filtered(kind:string){return records.filter((r:any)=>r.kind===kind&&(!selected||r.student_id===selected||(['message','notification'].includes(kind)&&(!r.student_id||r.student_id===selected)&&(!r.circle_id||r.circle_id===students.find((s:any)=>s.id===selected)?.circle_id)))&&(!dateFrom||r.date>=dateFrom)&&(!dateTo||r.date<=dateTo)&&matches({...r,student:studentName(r.student_id),user:userName(r.user_id)})).sort((a:any,b:any)=>sort==='oldest'?a.date.localeCompare(b.date):sort==='name'?studentName(a.student_id).localeCompare(studentName(b.student_id),'ar'):b.date.localeCompare(a.date));}
-function details(r:any){const d=r.data;switch(r.kind){case 'attendance':return `${d.attendance} · ${d.check_in||'—'} ← ${d.check_out||'—'}`;case 'memorization':case 'revision':case 'plan':case 'assessment':return learningSummary(r.kind,d);case 'subscription':return `${d.title} · الاستحقاق ${pretty(d.due)}`;case 'payment':return `${d.method} ${d.reference||''}`;case 'expense':return `${d.category} · ${d.reason}`;case 'staff_attendance':if(!d.check_in)return `${d.attendance||'غائب'} · ${d.reason||''}`;return `${d.late_minutes?'تأخير '+d.late_minutes+' دقيقة · ':''}${new Date(d.check_in).toLocaleTimeString('ar-EG',{hour:'2-digit',minute:'2-digit'})} ← ${d.check_out?new Date(d.check_out).toLocaleTimeString('ar-EG',{hour:'2-digit',minute:'2-digit'}):'لم ينصرف'} · ${d.minutes||0} دقيقة · ${d.sessions||0} حلقة محتسبة`;case 'salary':return `${Number(d.hours).toFixed(1)} ساعة · ${d.sessions} حلقات · مصروفات ${cash(d.expenses)}`;case 'salary_config':return `${({hourly:'بالساعة',session:'بالحلقة',monthly:'شهري',mixed:'مختلط'} as any)[d.method]} · ${cash(d.rate)} · الثابت ${cash(d.fixed)}`;case 'transfer':return `${circleName(d.from)} ← ${circleName(d.to)} · ${d.new_level}`;default:return d.text||d.title||d.notes||circleName(r.circle_id);}}
-function exportCsv(kind:string){const rows=filtered(kind);const esc=(v:any)=>'"'+String(v??'').replace(/^[=+@-]/,"'").replace(/"/g,'""')+'"';const txt='\uFEFF'+[['التاريخ','الطالب','الحلقة','الشيخ / الحساب','التفاصيل','المبلغ بالجنيه','الحالة'],...rows.map((r:any)=>[r.date,studentName(r.student_id),circleName(r.circle_id),userName(r.user_id),details(r),r.amount/100,statuses[r.status]||r.status])].map(row=>row.map(esc).join(',')).join('\n');const url=URL.createObjectURL(new Blob([txt],{type:'text/csv;charset=utf-8'}));const a=document.createElement('a');a.href=url;a.download=`dar-${kind}-${today()}.csv`;a.click();URL.revokeObjectURL(url);}
-function recordsTable(kind:string){const rows=filtered(kind);return !rows.length?<Empty text="لا توجد سجلات مطابقة. غيّر الفلاتر أو أضف سجلًا جديدًا."/>:<Table><TableHeader><TableRow><TableHead>الطالب / الحساب</TableHead><TableHead>التفاصيل</TableHead><TableHead>التاريخ</TableHead>{['subscription','payment','expense','salary'].includes(kind)&&<TableHead>القيمة</TableHead>}<TableHead>الحالة</TableHead><TableHead>الإجراء</TableHead></TableRow></TableHeader><TableBody>{rows.map((r:any)=>{const paid=kind==='subscription'?paidFor(r.id):0;const status=kind==='subscription'?(paid>=r.amount?'paid':r.data.due<today()?'overdue':paid?'partial':'due'):r.status;return <TableRow key={r.id}><TableCell><strong>{r.student_id?studentName(r.student_id):userName(r.user_id||r.actor_id)}</strong><small>{circleName(r.circle_id)}</small></TableCell><TableCell className="detail-cell">{details(r)}{r.data.notes&&<small>{r.data.notes}</small>}{r.data.receipt&&<a href={`${api}?action=file&id=${r.data.receipt}`} target="_blank" rel="noreferrer" className="link">عرض الإيصال</a>}</TableCell><TableCell>{pretty(r.date)}</TableCell>{['subscription','payment','expense','salary'].includes(kind)&&<TableCell><strong>{cash(r.amount)}</strong>{kind==='subscription'&&<small>المتبقي {cash(r.amount-paid)}</small>}</TableCell>}<TableCell><Badge value={status}/></TableCell><TableCell><div className="row-actions">{kind==='attendance'&&canTeach&&!r.data.check_out&&['حاضر','متأخر'].includes(r.data.attendance)&&<button onClick={()=>open('checkout',{id:r.id,time:new Date().toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit',timeZone:'Africa/Cairo'})})}>تسجيل انصراف</button>}{kind==='expense'&&isAdmin&&r.status==='pending'&&<><button disabled={busy} onClick={()=>run('record_status',{id:r.id,status:'approved'})}>اعتماد</button><button disabled={busy} className="danger-text" onClick={()=>run('record_status',{id:r.id,status:'rejected'})}>رفض</button></>}{kind==='subscription'&&isAdmin&&paid<r.amount&&<button onClick={()=>open('payment',{student_id:r.student_id,parent_id:r.id,amount:(r.amount-paid)/100,method:'نقدي'})}>تسجيل دفعة</button>}{kind==='plan'&&u.role==='student'&&r.status==='assigned'&&<button disabled={busy} onClick={()=>run('record_status',{id:r.id,status:'completed'})}>أنجزت المطلوب <Check size={14}/></button>}{kind==='content'&&isAdmin&&<button disabled={busy} onClick={()=>run('record_status',{id:r.id,status:r.status==='published'?'draft':'published'})}>{r.status==='published'?'إلغاء النشر':'نشر'}</button>}{kind==='waitlist'&&isAdmin&&r.status!=='closed'&&<button disabled={busy} onClick={()=>run('record_status',{id:r.id,status:'closed'})}>إغلاق الطلب</button>}{kind==='salary'&&<button onClick={()=>open('statement',{...r.data,name:userName(r.user_id),date:r.date,net:r.amount})}>عرض الكشف</button>}</div></TableCell></TableRow>;})}</TableBody></Table>;}
-function filters(){return <div className="calm-filter"><div className="filter-search"><div className="searchbox"><Search size={18}/><input aria-label="بحث في السجلات" value={search} onChange={e=>setSearch(e.target.value)} placeholder="ابحث بالاسم أو التفاصيل..."/></div></div><details className="filter-options"><summary>تصفية وترتيب{(selected||dateFrom||dateTo||sort!=='newest')?' · مفعّلة':''}</summary><div className="filterbar"><Choice value={selected} onChange={setSelected} options={studentOptions} placeholder="كل الطلاب"/><Choice value={sort} onChange={setSort} options={[{value:"newest",label:"الأحدث أولًا"},{value:"oldest",label:"الأقدم أولًا"},{value:"name",label:"حسب اسم الطالب"}]}/><input aria-label="من تاريخ" type="date" value={dateFrom} onChange={e=>setDateFrom(e.target.value)}/><span>إلى</span><input aria-label="إلى تاريخ" type="date" value={dateTo} onChange={e=>setDateTo(e.target.value)}/></div></details></div>;}
-if(loading)return <div className="loading-screen"><Logo/><Skeleton className="h-8 w-64"/><Skeleton className="h-48 w-80"/><p>جارٍ تحميل الدار...</p></div>;
-if(error&&!state)return <div className="loading-screen"><Logo/><p role="alert">{error}</p><button className="primary" onClick={refresh}><RefreshCw size={16}/> إعادة المحاولة</button></div>;
-if(!u)return <Auth state={state} refresh={refresh} portal={portal}/>;
-if(portal&&u.role!==portal)return <div className="loading-screen"><Logo/><h1>أنت مسجل بحساب {roleNames[u.role]}</h1><p>بوابة {roleNames[portal]} مخصصة للحسابات المعتمدة بهذا الدور.</p><a className="primary" href={'/'+u.role}>افتح بوابتي</a><button className="secondary" onClick={async()=>{await call('logout');await refresh();}}>تسجيل خروج للدخول بحساب آخر</button><a className="text-btn" href="/portals">كل البوابات</a></div>;
-const profile=students.find((s:any)=>s.id===selected);
-const pending=users.filter((a:any)=>a.status==='pending').length;
-const attendanceToday=records.filter((r:any)=>r.kind==='attendance'&&r.date===today());
-const present=attendanceToday.filter((r:any)=>['حاضر','متأخر'].includes(r.data.attendance)).length;
-const allGroups=Array.from(new Set(visibleNav.map(n=>n[3])));
-return <SidebarProvider style={{'--sidebar-width':'16.5rem'} as React.CSSProperties}><Toaster position="top-center" richColors dir="rtl"/><Sidebar side="right" className="academy-sidebar"><SidebarHeader><Logo/></SidebarHeader><SidebarContent>{allGroups.map((group:any)=><SidebarGroup key={group}><details className="nav-section" open={group==='الرئيسية'||visibleNav.some(n=>n[0]===view&&n[3]===group)}><summary>{group}</summary><SidebarMenu>{visibleNav.filter(n=>n[3]===group).map(([id,label,Icon])=><SidebarMenuItem key={id}><SidebarMenuButton isActive={view===id} onClick={()=>go(id)} tooltip={label}><Icon size={19}/><span>{(isTeacher?{dashboard:'حلقة اليوم',attendance:'سجل الحضور',learning:'سجل الحفظ والمراجعة',staff:'حضوري ومرتبّي'}:u.role==='parent'?{students:'ملفات أبنائي',circles:'حلقات أبنائي',learning:'حفظ ومراجعة أبنائي',attendance:'حضور أبنائي'}:u.role==='student'?{students:'ملفي',circles:'حلقتي',learning:'حفظي ومراجعتي',attendance:'حضوري'}:isTeacher?{students:'طلابي',circles:'حلقاتي',staff:'حضوري ومستحقاتي'}:{} as any)[id]||label}</span>{id==='requests'&&(state.requests||[]).some((r:any)=>r.status==='pending'&&r.account_status==='pending')&&<b className="nav-counter">{state.requests.filter((r:any)=>r.status==='pending'&&r.account_status==='pending').length}</b>}{id==='accounts'&&pending>0&&<b className="nav-counter">{pending}</b>}</SidebarMenuButton></SidebarMenuItem>)}</SidebarMenu></details></SidebarGroup>)}</SidebarContent><SidebarFooter><a className="text-btn" href="/portals"><Globe size={17}/> بوابات الدار</a><button className="profile-mini" onClick={()=>open('password')}><span className="avatar">{u.details?.photo_id?<img src={api+'?action=avatar&id='+u.id} alt="صورتي"/>:u.name.slice(0,1)}</span><span><strong>{u.name}</strong><small>{roleNames[u.role]}</small></span><Settings size={16}/></button><button className="logout" onClick={async()=>{await call('logout');await refresh();}}><LogOut size={16}/> تسجيل الخروج</button></SidebarFooter></Sidebar>
-<SidebarInset className="main-surface"><header className="topbar"><div className="flex items-center gap-3"><SidebarTrigger/><img className="topbar-dar-logo" src="/logo.jpg" alt="شعار دار الطفل المسلم" width="60" height="60"/><strong className="header-dar-name">دار الطفل المسلم</strong></div><div className="top-actions"><button className="icon-btn" aria-label="الإشعارات" onClick={()=>{go('messages');setTab('notification');}}><Bell size={20}/>{records.some((r:any)=>r.kind==='notification'&&r.status==='unread')&&<i/>}</button></div></header>
-<main className="page-content">{error&&<div className="error-banner">{error}<button onClick={refresh}>حاول مجددًا</button></div>}
-{state.restrictions?.length>0&&<div className="inline-note">توجد اشتراكات متأخرة. راجع صفحة الاشتراكات أو تواصل مع الإدارة.{state.restrictions.some((r:any)=>r.restricted)&&" تم تقييد خطة الحفظ وفق إعدادات الدار حتى تسوية الاشتراك."}</div>}<div className="page-heading"><div><p className="eyebrow">{view==='dashboard'?`بوابة ${roleNames[u.role]}`:'دار الطفل المسلم'}</p><h1>{view==='dashboard'?isTeacher?'حلقة اليوم':`أهلًا بك، ${u.name.split(' ')[0]}`:navs.find(n=>n[0]===view)?.[1]}</h1><p>{view==='dashboard'?(isAdmin?'كل ما تحتاجه لمتابعة الدار، في مكان واحد.':isTeacher?'الحضور والجديد والمراجعة والمطلوب القادم، في بطاقة واحدة.':u.role==='parent'?'تابع حفظ كل ابن وحضوره واشتراكه.':'المطلوب القادم وإنجازك وملاحظات الشيخ.'):({students:'ملف لكل طالب، ومتابعة لكل خطوة.',circles:'تنظيم الحلقات والمواعيد والمشايخ المسؤولين.',accounts:'راجع الطلبات واربط كل حساب بملفه الصحيح.',learning:'من الحفظ الأول إلى الإتقان، خطوة بخطوة.',finance:'سجل واضح للاشتراكات والمدفوعات والمتبقي.',staff:'الحضور والمصروفات وكشوف المرتبات.',reports:'بيانات الدار، جاهزة للمراجعة والطباعة.'} as any)[view]||''}</p></div><div className="heading-actions">{view==='dashboard'&&isAdmin&&<button className="primary" onClick={()=>open('attendance',{attendance:'حاضر'})}><Plus size={18}/> تسجيل حضور</button>}{view==='students'&&isAdmin&&<button className="primary" onClick={()=>open('student',{status:'active'})}><Plus size={18}/> إضافة طالب</button>}{view==='circles'&&isAdmin&&<button className="primary" onClick={()=>open('circle',{capacity:20,duration:60,type:'حضوري',status:'active',teachers:[]})}><Plus size={18}/> إضافة حلقة</button>}{view==='accounts'&&<button className="primary" onClick={()=>open('link')}><Link2 size={18}/> ربط حساب بطالب</button>}{view==='content'&&<><a className="secondary" href="/about" target="_blank">عرض الموقع <ArrowUpLeft size={16}/></a><button className="primary" onClick={()=>open('content',{status:'draft'})}><Plus size={18}/> إضافة محتوى</button></>}</div></div>
-{view==='dashboard'&&isAdmin&&<>
-<div className="stats-grid"><Stat title={isAdmin?'إجمالي الطلاب':'الطلاب المرتبطون بك'} value={fmt(students.length)} icon={Users} footer={`${circles.length} حلقات تعليمية`} tone="teal"/><Stat title="حضور اليوم" value={fmt(present)} icon={CalendarCheck} footer={`${fmt(attendanceToday.length)} سجل حضور اليوم`} tone="blue"/><Stat title={isTeacher?'حلقاتي':'إجمالي التحصيل'} value={isTeacher?fmt(circles.length):cash(sum('payment'))} icon={isTeacher?BookOpen:Wallet} footer={isTeacher?'الحلقات المسندة إليك':'المدفوعات المسجلة'} tone="green"/><Stat title={isTeacher?'مصروفات قيد المراجعة':'اشتراكات متبقية'} value={isTeacher?fmt(records.filter((r:any)=>r.kind==='expense'&&r.status==='pending').length):cash(outstanding)} icon={Receipt} footer={isTeacher?'بانتظار اعتماد الإدارة':'الرصيد المستحق على الطلاب'} tone="amber"/></div>
-<div className="dashboard-grid"><section className="panel"><div className="panel-head"><div><h2>{canTeach?'حلقات الدار':'حلقاتي التعليمية'}</h2><p>المواعيد والطلاب في لمحة</p></div><button className="text-btn" onClick={()=>go('circles')}>كل الحلقات <ArrowUpLeft size={16}/></button></div>{circles.length?<div className="circle-summary">{circles.slice(0,4).map((c:any)=><div key={c.id} className="circle-summary-row"><span className="tile-icon"><BookOpen size={21}/></span><div><strong>{c.name}</strong><small>{c.schedule}</small></div><div className="circle-count"><b>{fmt(students.filter((s:any)=>s.circle_id===c.id).length)}</b><small>طالب</small></div><Badge value={c.type}/></div>)}</div>:<Empty title="ابدأ بأول حلقة" text={isAdmin?'أضف مواعيد الحلقة والمستوى، ثم ألحق الطلاب بها.':'ستظهر حلقاتك بعد ربط الحساب من الإدارة.'} action={isAdmin?<button className="secondary" onClick={()=>open('circle',{type:'حضوري',status:'active',capacity:20,teachers:[]})}>إضافة حلقة <Plus size={16}/></button>:undefined}/>}</section>
-<section className="panel attention"><div className="panel-head"><div><h2>يحتاج متابعتك</h2><p>الخطوة التالية تبدأ من هنا</p></div><Clock size={20}/></div>{isAdmin?<><button className="attention-row" onClick={()=>go('accounts')}><span className="attention-icon"><Users size={19}/></span><span><strong>طلبات الحسابات</strong><small>بانتظار المراجعة والربط</small></span><b>{fmt(pending)}</b><ChevronLeft size={16}/></button><button className="attention-row" onClick={()=>{go('staff');setTab('expense');}}><span className="attention-icon amber"><Receipt size={19}/></span><span><strong>مصروفات المشايخ</strong><small>بانتظار الاعتماد</small></span><b>{fmt(records.filter((r:any)=>r.kind==='expense'&&r.status==='pending').length)}</b><ChevronLeft size={16}/></button><button className="attention-row" onClick={()=>go('finance')}><span className="attention-icon blue"><Wallet size={19}/></span><span><strong>اشتراكات متأخرة</strong><small>مراجعة الرصيد والتواصل</small></span><b>{fmt(records.filter((r:any)=>r.kind==='subscription'&&r.data.due<today()&&paidFor(r.id)<r.amount).length)}</b><ChevronLeft size={16}/></button></>:<><button className="attention-row" onClick={()=>{go('learning');setTab('plan');}}><BookMarked/><span><strong>المطلوب للحلقة القادمة</strong><small>الحفظ والمراجعة</small></span><ChevronLeft/></button><button className="attention-row" onClick={()=>go('messages')}><MessagesSquare/><span><strong>رسائل الدار</strong><small>آخر الأخبار والملاحظات</small></span><ChevronLeft/></button></>}</section></div>
-<details className="calm-details"><summary>الإحصائيات وآخر النشاط</summary><div className="calm-details-body"><div className="dashboard-grid"><section className="panel"><div className="panel-head"><div><h2>متابعة الحفظ</h2><p>الإنجاز المسجل لكل طالب</p></div><BookMarked size={21}/></div>{students.length?<div className="progress-list">{students.slice(0,4).map((s:any)=>{const plans=records.filter((r:any)=>r.kind==='plan'&&r.student_id===s.id);const done=plans.filter((r:any)=>r.status==='completed').length;const ratio=plans.length?Math.round(done/plans.length*100):0;return <div key={s.id}><div className="spread"><strong>{s.name}</strong><span>{plans.length?`${ratio}%`:'لم تحدد خطة بعد'}</span></div><Progress value={ratio}/><small>{records.filter((r:any)=>r.kind==='memorization'&&r.student_id===s.id).length} سجل حفظ · {done} من {plans.length} تكليف مكتمل</small></div>;})}</div>:<Empty title="لكل طالب رحلة تستحق المتابعة" text="أضف الطلاب وسجل الحفظ والمراجعة لتظهر المتابعة هنا."/>}</section><section className="panel"><div className="panel-head"><div><h2>آخر النشاط</h2><p>أحدث ما تم تسجيله في الدار</p></div><button className="text-btn" onClick={()=>go(isAdmin?'audit':'reports')}>عرض الكل</button></div><div className="activity-list">{records.slice(0,5).map((r:any)=><div key={r.id}><span className="activity-dot"/><div><strong>{kindNames[r.kind]||r.kind}</strong><p>{r.student_id?studentName(r.student_id):details(r)}</p><small>{pretty(r.created)}</small></div></div>)}{!records.length&&<Empty title="البداية من هنا" text="كل حضور وتسميع ودفعة تُسجّل ستظهر في سجل النشاط."/>}</div></section></div>
-{isAdmin&&<div className="dashboard-grid"><section className="panel"><div className="panel-head"><div><h2>الحضور حسب الحلقة</h2><p>الحضور المسجل خلال آخر 30 يومًا</p></div></div><div className="analytics-bars">{circles.length?circles.map((c:any)=>{const rr=records.filter((r:any)=>r.kind==='attendance'&&r.circle_id===c.id&&Date.now()-Date.parse(r.date)<30*86400000);const percent=rr.length?Math.round(rr.filter((r:any)=>['حاضر','متأخر'].includes(r.data.attendance)).length/rr.length*100):0;return <div className="analytics-row" key={c.id}><span>{c.name}</span><div className="analytics-track"><div className="analytics-fill" style={{width:percent+'%'}}/></div><strong>{percent}%</strong></div>;}):<p className="muted">سيظهر توزيع الحضور بعد إضافة الحلقات وتسجيل الجلسات.</p>}</div></section><section className="panel"><div className="panel-head"><div><h2>التحصيل الشهري</h2><p>إجمالي المدفوعات المسجلة</p></div></div><div className="analytics-bars">{Array.from({length:4},(_,i)=>{const d=new Date();d.setMonth(d.getMonth()-(3-i));const month=d.toISOString().slice(0,7);const value=records.filter((r:any)=>r.kind==='payment'&&r.date.startsWith(month)).reduce((n:number,r:any)=>n+r.amount,0);return <div key={month} className="analytics-row"><span>{d.toLocaleDateString('ar-EG',{month:'long'})}</span><div className="analytics-track"><div className="analytics-fill" style={{width:(sum('payment')?value/sum('payment')*100:0)+'%'}}/></div><strong>{fmt(value/100)}</strong></div>;})}<small>القيم بالجنيه المصري</small></div></section></div>}</div></details>{isAdmin&&<div className="quickbar"><span>وصول سريع</span><button onClick={()=>open('student',{status:'active'})}><Users size={18}/> طالب جديد</button><button onClick={()=>open('memorization')}><BookMarked size={18}/> تسجيل تسميع</button><button onClick={()=>open('payment',{method:'نقدي'})}><Wallet size={18}/> تسجيل دفعة</button><button onClick={()=>open('message')}><Send size={18}/> إرسال رسالة</button></div>}</>}
-{isTeacher&&<div style={{display:view==='dashboard'?'block':'none'}}><TeacherLesson state={state} refresh={refresh} call={call} onOpen={open}/></div>}
-{view==='dashboard'&&!isAdmin&&!isTeacher&&<RoleHome user={u} students={students} circles={circles} records={records} assignments={state.assignments} users={users} childId={selected} onChooseChild={setSelected} onNavigate={go} onOpen={open} onComplete={(id:string)=>run('record_status',{id,status:'completed'})} busy={busy}/>}
-{u.role==='parent'&&view!=='dashboard'&&students.length>0&&<div className="child-filter panel"><strong>متابعة الابن</strong><Choice value={selected} onChange={setSelected} options={studentOptions} placeholder="اختر ابنًا"/></div>}
-{view==='students'&&<>{selected&&profile?<><button className="text-btn" onClick={()=>setSelected('')}><ArrowRight size={16}/> كل الطلاب</button><section className="panel student-profile"><span className="avatar large">{profile.name[0]}</span><div><h2>{profile.name}</h2><p>{profile.level} · {circleName(profile.circle_id)}</p><p>ولي الأمر: {profile.details.guardian_name||'—'} · {profile.details.guardian_phone||'—'}</p><p>تاريخ الالتحاق: {pretty(profile.details.enrollment_date)}</p><p>{profile.details.notes}</p></div>{isAdmin&&<button className="secondary" onClick={()=>open('student',{...profile,...profile.details})}>تعديل الملف</button>}</section><section className="panel"><div className="panel-head"><h2>رحلة الطالب</h2><Badge value={profile.status}/></div><div className="timeline">{records.filter((r:any)=>r.student_id===selected).map((r:any)=><div key={r.id}><span className="activity-dot"/><div><h3>{kindNames[r.kind]}</h3><p>{details(r)}</p><small>{pretty(r.date)} · {cash(r.amount)} {r.status==='void'?'· ملغي':''}</small></div></div>)}</div></section></>:<section className="panel">{filters()}{students.filter(matches).length?<Table><TableHeader><TableRow><TableHead>الطالب</TableHead><TableHead>الحلقة / المستوى</TableHead><TableHead>ولي الأمر</TableHead><TableHead>الحالة</TableHead><TableHead/></TableRow></TableHeader><TableBody>{students.filter(matches).map((s:any)=><TableRow key={s.id}><TableCell><div className="person"><span className="avatar">{s.name[0]}</span><span><strong>{s.name}</strong><small>{s.phone||'لا يوجد هاتف'}</small></span></div></TableCell><TableCell>{circleName(s.circle_id)}<small>{s.level}</small></TableCell><TableCell>{s.details.guardian_name||'—'}<small>{s.details.guardian_phone}</small></TableCell><TableCell><Badge value={s.status}/></TableCell><TableCell><button className="text-btn" onClick={()=>setSelected(s.id)}>ملف الطالب <ChevronLeft size={16}/></button></TableCell></TableRow>)}</TableBody></Table>:<Empty title="لا يوجد طلاب بعد" text="أضف ملفات الطلاب، ثم اربط حساباتهم وحسابات أولياء الأمور بها."/>}</section>}</>}
-{view==='circles'&&<><div className="circle-grid">{circles.map((c:any)=>{const count=students.filter((s:any)=>s.circle_id===c.id).length;return <section className="panel circle-card" key={c.id}><div className="spread"><span className="tile-icon"><BookOpen size={26}/></span><Badge value={c.status}/></div><h2>{c.name}</h2><p>{c.level} · {c.type}</p><div className="schedule-line"><Clock size={17}/>{JSON.parse(state.settings).ramadan&&c.details.ramadan_schedule?c.details.ramadan_schedule:c.schedule}</div><div className="schedule-line"><GraduationCap size={17}/>{(state.assignments||[]).filter((a:any)=>a.circle_id===c.id).map((a:any)=>userName(a.user_id)).join('، ')||'لم يحدد شيخ'}</div><div className="spread"><small>الطلاب المسجلون</small><strong>{count} / {c.capacity}</strong></div><Progress value={count/c.capacity*100}/><div className="spread card-bottom"><span>{c.details.duration||60} دقيقة</span>{isAdmin&&<button className="text-btn" onClick={()=>open('circle',{...c,...c.details,fee:c.details.fee/100,teachers:state.assignments.filter((a:any)=>a.circle_id===c.id).map((a:any)=>a.user_id)})}>إدارة الحلقة <ChevronLeft size={16}/></button>}</div></section>;})}</div>{!circles.length&&<section className="panel"><Empty title="لم تُضف حلقات بعد"/></section>}{isAdmin&&<section className="panel mt-6"><div className="panel-head"><h2>قائمة الانتظار</h2><button className="secondary" onClick={()=>open('waitlist')}>إضافة طلب <Plus size={16}/></button></div>{recordsTable('waitlist')}</section>}</>}
-{view==='requests'&&canTeach&&<RegistrationRequests requests={state.requests||[]} students={students} circles={circles} refresh={refresh}/>}
-{view==='accounts'&&<><section className="panel connection-guide"><h2>اربط الدار في ثلاث خطوات</h2><p>١. فعّل حساب الشيخ وأسند حلقاته. ٢. اربط حساب الطالب بملفه وحلقته. ٣. اربط ولي الأمر بأبنائه.</p><div className="heading-actions"><button className="primary" onClick={()=>open('connect_account')}>تفعيل وربط حساب <Link2 size={17}/></button><a className="secondary" href="/portals">روابط البوابات <ArrowUpLeft size={17}/></a></div></section><section className="panel"><div className="filterbar"><div className="searchbox"><Search size={18}/><input value={search} onChange={e=>setSearch(e.target.value)} placeholder="ابحث بالاسم أو الهاتف"/></div><Badge value="pending"/><span>{pending} طلب</span></div><Table><TableHeader><TableRow><TableHead>الحساب</TableHead><TableHead>النوع</TableHead><TableHead>الحالة</TableHead><TableHead>الطلاب المرتبطون</TableHead><TableHead>الإجراءات</TableHead></TableRow></TableHeader><TableBody>{users.filter(matches).map((a:any)=><TableRow key={a.id}><TableCell><div className="person">{a.details.photo_id&&<span className="avatar"><img src={api+'?action=avatar&id='+a.id} alt="الصورة الشخصية"/></span>}<strong>{a.name}</strong></div><small dir="ltr">{a.phone}</small><small dir="ltr">{a.details.username}</small><small>{a.details.verification}</small></TableCell><TableCell>{roleNames[a.role]}</TableCell><TableCell><Badge value={a.status}/></TableCell><TableCell>{['sheikh','assistant'].includes(a.role)&&state.assignments.filter((l:any)=>l.user_id===a.id).map((l:any)=><div key={l.id}>{circleName(l.circle_id)}</div>)}{state.links.filter((l:any)=>l.user_id===a.id).map((l:any)=><div key={l.id}>{studentName(l.student_id)} <button className="danger-text" onClick={()=>open('unlinkConfirm',{id:l.id})}>فك الربط</button></div>)}</TableCell><TableCell><div className="row-actions">{a.id!==u.id&&<>{a.status!=='active'&&<button onClick={()=>open('connect_account',{user_id:a.id,student_ids:state.links.filter((l:any)=>l.user_id===a.id).map((l:any)=>l.student_id),circle_ids:state.assignments.filter((l:any)=>l.user_id===a.id).map((l:any)=>l.circle_id)})}>تفعيل وربط</button>}{a.status==='pending'&&<button disabled={busy} className="danger-text" onClick={()=>run('account',{id:a.id,status:'rejected'})}>رفض</button>}{a.status==='active'&&<button disabled={busy} className="danger-text" onClick={()=>run('account',{id:a.id,status:'suspended'})}>إيقاف</button>}<button onClick={()=>open('password',{user_id:a.id})}>كلمة المرور</button>{a.status==='active'&&<button onClick={()=>open('connect_account',{user_id:a.id,student_ids:state.links.filter((l:any)=>l.user_id===a.id).map((l:any)=>l.student_id),student_id:state.links.find((l:any)=>l.user_id===a.id)?.student_id,circle_ids:state.assignments.filter((l:any)=>l.user_id===a.id).map((l:any)=>l.circle_id)})}>إدارة الربط</button>}</>}</div></TableCell></TableRow>)}</TableBody></Table></section></>}
-{['attendance','learning','finance','staff'].includes(view)&&<section className="panel"><div className="section-toolbar">{view!=='attendance'&&<Tabs value={tab} onValueChange={setTab} dir="rtl"><TabsList>{(view==='learning'?['memorization','revision','plan','assessment','note']:view==='finance'?['subscription','payment']:['staff_attendance','expense','salary','salary_config']).map(t=><TabsTrigger value={t} key={t}>{kindNames[t]}</TabsTrigger>)}</TabsList></Tabs>}<div className="heading-actions">{((view==='attendance'||view==='learning')?canTeach:view==='finance'?isAdmin:tab==='salary'||tab==='salary_config'?isAdmin:canTeach)&&<button className="primary" onClick={()=>open(view==='attendance'?'attendance':tab,{...(view==='attendance'?{attendance:'حاضر'}:{}),...(tab==='staff_attendance'?{mode:'in',sessions:1}:{}),...(tab==='salary_config'?{method:'session'}:{})})}><Plus size={17}/> {tab==='salary'?'إنشاء وإقفال كشف':'إضافة سجل'}</button>}<button className="secondary" onClick={()=>exportCsv(view==='attendance'?'attendance':tab)}><Download size={17}/> تصدير</button></div></div>{filters()}{tab==='salary'&&view==='staff'&&<p className="inline-note">في نظام بالحَلقة: المستحق = الحلقات المكتملة حضورًا وانصرافًا × أجر الحلقة الساري يوم الحضور. الغياب والحضور المفتوح لا يُحتسبان. الكشف يُقفل نهائيًا عند إنشائه. أدرج أي تصحيح لاحق في إضافات أو خصومات الشهر التالي.</p>}{recordsTable(view==='attendance'?'attendance':tab)}</section>}
-{view==='messages'&&<section className="panel"><div className="section-toolbar"><Tabs dir="rtl" value={tab} onValueChange={setTab}><TabsList><TabsTrigger value="message">الرسائل</TabsTrigger><TabsTrigger value="notification">الإشعارات</TabsTrigger></TabsList></Tabs><button className="primary" onClick={()=>open('message')}><Send size={17}/> رسالة جديدة</button></div><div className="message-list">{filtered(tab).map((r:any)=><article key={r.id}><span className="avatar"><MessagesSquare size={20}/></span><div><div className="spread"><strong>{userName(r.actor_id)}</strong><small>{pretty(r.created)}</small></div><p>{r.data.text}</p><small>{r.circle_id?circleName(r.circle_id):r.user_id?'رسالة خاصة':'إعلان لجميع الدار'}</small>{r.user_id===u.id&&r.status!=='read'&&<button disabled={busy} className="text-btn" onClick={()=>run('record_status',{id:r.id,status:'read'})}>تحديد كمقروء</button>}</div></article>)}{!filtered(tab).length&&<Empty title="لا توجد رسائل هنا" text="الرسائل والتنبيهات الخاصة بك ستظهر هنا."/>}</div></section>}
-{view==='reports'&&<section className="panel"><div className="section-toolbar"><Choice value={reportKind} onChange={setReportKind} options={Object.entries(kindNames).filter(([k])=>isAdmin||!['content','salary_config'].includes(k)).map(([k,v])=>({value:k,label:v}))}/><div className="heading-actions"><button className="secondary" onClick={()=>exportCsv(reportKind)}><Download size={17}/> CSV / Excel</button><button className="primary" onClick={()=>window.print()}><Printer size={17}/> طباعة / PDF</button></div></div>{filters()}<div className="report-title"><h2>دار الطفل المسلم — {kindNames[reportKind]}</h2><p>{dateFrom?pretty(dateFrom):'من بداية التسجيل'} — {dateTo?pretty(dateTo):'حتى اليوم'}</p><strong>{filtered(reportKind).length} سجل {['subscription','payment','expense','salary'].includes(reportKind)&&` · الإجمالي ${cash(filtered(reportKind).reduce((n:number,r:any)=>n+r.amount,0))}`}</strong></div>{recordsTable(reportKind)}</section>}
-{view==='content'&&<section className="panel">{recordsTable('content')}</section>}
-{view==='audit'&&<section className="panel"><div className="filterbar"><div className="searchbox"><Search size={18}/><input value={search} onChange={e=>setSearch(e.target.value)} placeholder="بحث في سجل النشاط"/></div><span className="muted">آخر 1000 عملية · سجل غير قابل للحذف</span></div><Table><TableHeader><TableRow><TableHead>المستخدم</TableHead><TableHead>العملية</TableHead><TableHead>التوقيت</TableHead><TableHead>التفاصيل</TableHead></TableRow></TableHeader><TableBody>{state.audit.filter(matches).map((a:any)=><TableRow key={a.id}><TableCell>{a.actor}</TableCell><TableCell>{kindNames[a.action]||({student:'تحديث ملف طالب',circle:'تحديث حلقة',account_status:'حالة حساب',link:'ربط حساب',register:'إنشاء حساب',settings:'تحديث الإعدادات',record_status:'تحديث حالة سجل',staff_in:'حضور شيخ',staff_out:'انصراف شيخ',salary_lock:'إقفال المرتب',password_reset:'تغيير كلمة المرور',unlink:'فك ربط حساب'} as any)[a.action]||a.action}</TableCell><TableCell>{new Date(a.created).toLocaleString('ar-EG')}</TableCell><TableCell><button className="text-btn" onClick={()=>open('auditDetail',a)}>عرض التغيير</button></TableCell></TableRow>)}</TableBody></Table></section>}
-{view==='settings'&&<SettingsPanel state={state} refresh={refresh} run={run}/>}
-<SiteFooter/>
-</main></SidebarInset>
-<Dialog open={!!modal} onOpenChange={v=>{if(!v)setModal(null);}}><DialogContent className="academy-dialog" dir="rtl"><DialogHeader><DialogTitle>{({connect_account:'تفعيل الحساب وربط البيانات',student:values.id?'تعديل ملف الطالب':'إضافة طالب جديد',circle:values.id?'إدارة الحلقة':'إضافة حلقة جديدة',checkout:'تسجيل انصراف الطالب',link:'ربط حساب بملف طالب',password:'تغيير كلمة المرور',statement:'كشف المرتب',auditDetail:'تفاصيل التغيير',unlinkConfirm:'فك ارتباط الحساب'} as any)[modal?.type]||kindNames[modal?.type]||'إضافة سجل'}</DialogTitle><DialogDescription>{modal?.type==='salary'?'راجع البيانات؛ لن يتغير الكشف بعد إقفاله.':'دار الطفل المسلم'}</DialogDescription></DialogHeader>{modal?.type==='auditDetail'?<div className="audit-detail"><h3>قبل</h3><pre>{JSON.stringify(JSON.parse(values.before_value||'null'),null,2)}</pre><h3>بعد</h3><pre>{JSON.stringify(JSON.parse(values.after_value||'null'),null,2)}</pre></div>:modal?.type==='unlinkConfirm'?<div><p>سيفقد الحساب الوصول إلى بيانات هذا الطالب. يبقى سجل الطالب محفوظًا.</p><button className="primary" onClick={async()=>{await run('unlink',{id:values.id});setModal(null);}}>تأكيد فك الربط</button></div>:modal?.type==='statement'?<div className="statement"><Logo/><h2>{values.name}</h2><p>{pretty(values.date)}</p>{[['الساعات',Number(values.hours).toFixed(2)],['عدد الحلقات',values.sessions],['الأجر الأساسي',cash(values.base)],['المصروفات المعتمدة',cash(values.expenses)],['الإضافات',cash(values.additions)],['الخصومات',cash(values.deductions)],['صافي المستحق',cash(values.net)]].map(([a,b])=><div className="spread" key={a}><strong>{a}</strong><span>{b}</span></div>)}<div className="salary-lines">{values.lines?.map((l:any)=><div className="salary-line" key={l.attendance_id}><span><strong>{l.circle_name}</strong><small>{pretty(l.date)}</small></span><span>{l.sessions} × {cash(l.rate)}</span><strong>{cash(l.amount)}</strong></div>)}</div><p>{values.notes}</p><button className="primary" onClick={()=>window.print()}><Printer size={17}/> طباعة الكشف</button></div>:<form onSubmit={save}><div className="form-grid">{formFields(modal?.type).map(f=><label key={f.name} className={['textarea','multi','check','file'].includes(f.type)?'full':''}><span>{f.label}{f.required&&<em> *</em>}</span>{f.type==='select'?<Choice id={f.name} value={values[f.name]} onChange={v=>setValues({...values,[f.name]:v,...(f.name==='student_id'?{parent_id:''}:{})})} options={f.options||[]}/>:f.type==='textarea'?<textarea value={values[f.name]||''} onChange={e=>setValues({...values,[f.name]:e.target.value})} required={f.required} rows={3}/>:f.type==='check'?<Checkbox checked={!!values[f.name]} onCheckedChange={v=>setValues({...values,[f.name]:v===true})}/>:f.type==='multi'?<div className="checks">{f.options.length?f.options.map((o:any)=><label key={o.value}><Checkbox checked={(values[f.name]||[]).includes(o.value)} onCheckedChange={v=>setValues({...values,[f.name]:v?[...(values[f.name]||[]),o.value]:(values[f.name]||[]).filter((id:string)=>id!==o.value)})}/>{o.label}</label>):<p>لا يوجد حساب شيخ نشط بعد؛ يمكن إسناد الحلقة لاحقًا.</p>}</div>:f.type==='file'?<><input type="file" accept="image/png,image/jpeg,image/webp,application/pdf" onChange={async e=>{const f=e.target.files?.[0];if(!f)return;setBusy(true);try{const data=new FormData();data.append('file',f);const r=await fetch(api,{method:'POST',body:data});const v:any=await r.json();if(!r.ok)throw new Error(v.error);setValues((old:any)=>({...old,receipt:v.id}));toast.success('تم رفع الإيصال');}catch(e:any){setFormError(e.message);}finally{setBusy(false);}}}/>{values.receipt&&<small>تم رفع الإيصال</small>}</>:<input type={f.type} min={f.type==='number'?0:undefined} step={f.type==='number'?'any':undefined} value={values[f.name]??''} onChange={e=>setValues({...values,[f.name]:e.target.value})} required={f.required}/>}</label>)}</div>{formError&&<p className="form-error" role="alert">{formError}</p>}<div className="form-footer"><button className="primary" disabled={busy} type="submit">{busy?<LoaderCircle size={17} className="animate-spin"/>:<Check size={17}/>} {modal?.type==='salary'?'حساب وإقفال الكشف':'حفظ البيانات'}</button><button className="secondary" type="button" onClick={()=>setModal(null)}>إلغاء</button></div></form>}</DialogContent></Dialog>
-</SidebarProvider>;
-}
-function Stat({title,value,icon:Icon,footer,tone}:any){return <section className="stat-card"><div className="spread"><span>{title}</span><span className={`stat-icon ${tone}`}><Icon size={21}/></span></div><h2>{value}</h2><small>{footer}</small></section>;}
-function Auth({state,refresh,portal}:any){const [mode,setMode]=useState(state.setup&&(!portal||portal==='admin')?'setup':'login'),[v,setV]=useState<any>({role:portal&&portal!=='admin'?portal:'student'}),[err,setErr]=useState(''),[busy,setBusy]=useState(false),[success,setSuccess]=useState('');const [options,setOptions]=useState<any[]>([]),[optionsError,setOptionsError]=useState(''),[otpEnabled,setOtpEnabled]=useState(false),[channel,setChannel]=useState('sms'),[code,setCode]=useState(''),[sent,setSent]=useState(false),[cooldown,setCooldown]=useState(0);useEffect(()=>{if(!cooldown)return;const t=setTimeout(()=>setCooldown(cooldown-1),1000);return()=>clearTimeout(t);},[cooldown]);async function verify(check=false){setBusy(true);setErr('');try{const r=await call(check?'phone_check':'phone_send',{phone:v.phone,code});if(check)setV({...v,phone_token:r.token});else{setSent(true);setCooldown(60);}}catch(e:any){setErr(e.message);}finally{setBusy(false);}}async function loadOptions(){try{const r=await fetch(api+'?action=signup_options');const d:any=await r.json();if(!r.ok)throw new Error(d.error);setOptions(d.circles);setOtpEnabled(!!d.phone_verification);setChannel(d.otp_channel||'sms');setOptionsError('');}catch{setOptionsError('تعذر تحميل الحلقات. حاول مجددًا.');}}useEffect(()=>{loadOptions();},[]);async function submit(e:any){e.preventDefault();setBusy(true);setErr('');try{const r=await call(mode,{...v,expected_role:portal});if(mode==='register'){setSuccess(r.message+' — اسم المستخدم: '+r.username);setMode('login');setV({role:v.role,phone:r.username,password:''});setSent(false);setCode('');}else await refresh();}catch(e:any){setErr(e.message);}finally{setBusy(false);}}
-return <div className="auth-page"><div className="auth-header"><Logo/><a href="/portals">كل البوابات <ArrowUpLeft size={16}/></a></div><div className="auth-layout"><section className="auth-card"><p className="auth-quote">فاز من اتخذ القرآن صاحبًا</p><h2>{mode==='setup'?'إعداد إدارة الدار':mode==='register'?`إنشاء حساب ${roleNames[v.role]}`:portal?`بوابة ${roleNames[portal]}`:'أهلًا بعودتك'}</h2><p>{mode==='setup'?'أنشئ حساب الإدارة الأول لتبدأ تنظيم الدار.':mode==='register'?(['sheikh','assistant'].includes(v.role)?'تراجع الإدارة طلبك قبل تفعيل الحساب.':'اختر فرعك وحلقتك ليراجع الشيخ المسؤول طلبك.'):'سجل دخولك لمتابعة رحلتك مع الدار.'}</p>{success&&<div className="success-banner">{success}</div>}<form onSubmit={submit}>{mode!=='login'&&<label>الاسم كاملًا<input required value={v.name||''} onChange={e=>setV({...v,name:e.target.value})}/></label>}{mode==='register'&&<><label>اسم المستخدم<input required dir="ltr" autoComplete="username" pattern="[a-zA-Z][a-zA-Z0-9_.\-]{3,31}" maxLength={32} placeholder="ahmed.yasser" value={v.username||''} onChange={e=>setV({...v,username:e.target.value.toLowerCase()})}/><small>من 4 إلى 32 حرفًا إنجليزيًا أو رقمًا، ويبدأ بحرف. يُستخدم للدخول للحساب.</small></label><label className="portrait-picker">الصورة الشخصية بخلفية بيضاء<div className="portrait-preview">{v.photo?<img src={v.photo} alt="معاينة الصورة الشخصية"/>:<UserRound size={32}/>}</div><input type="file" required accept="image/jpeg,image/png,image/webp" onChange={async e=>{const f=e.target.files?.[0];setV((x:any)=>({...x,photo:''}));if(!f)return;if(f.size>2*1024*1024||!['image/jpeg','image/png','image/webp'].includes(f.type)){setErr('اختر صورة JPG أو PNG أو WebP بحجم لا يتجاوز 2 ميجابايت');e.target.value='';return;}const data=await new Promise<string>((resolve,reject)=>{const r=new FileReader();r.onload=()=>resolve(String(r.result));r.onerror=reject;r.readAsDataURL(f);});const picture=new Image();picture.onload=()=>{setV((x:any)=>({...x,photo:data}));setErr('');};picture.onerror=()=>setErr('الصورة غير صالحة، اختر صورة أخرى');picture.src=data;}}/><small>ارفع صورة جاهزة بخلفية بيضاء، حتى 2 ميجابايت. لن تظهر للعامة.</small></label></>}<label>{mode==='login'?'اسم المستخدم أو رقم الهاتف':'رقم الهاتف'}<input type={mode==='login'?'text':'tel'} autoComplete={mode==='login'?'username':'tel'} dir="ltr" required value={v.phone||''} onChange={e=>{setV({...v,phone:e.target.value,phone_token:''});setSent(false);setCode('');}}/></label>{mode==='register'&&(otpEnabled?<div className="phone-verify">{v.phone_token?<p className="success-banner">تم تأكيد رقم الهاتف ✓</p>:<><small>أكد رقمك برسالة {channel==='whatsapp'?'واتساب':'SMS'}. يمكن استخدام الرقم نفسه لحسابات مختلفة.</small><button className="secondary" type="button" disabled={busy||cooldown>0||!v.phone} onClick={()=>verify()}>{cooldown?`إعادة الإرسال بعد ${cooldown} ثانية`:sent?'إعادة إرسال الكود':'إرسال كود التأكيد'}</button>{sent&&<><label>كود التأكيد<input inputMode="numeric" autoComplete="one-time-code" dir="ltr" maxLength={10} value={code} onChange={e=>setCode(e.target.value.replace(/[^0-9]/g,''))}/></label><button className="secondary" type="button" disabled={busy||code.length<4} onClick={()=>verify(true)}>تأكيد الرقم</button></>}</>}</div>:<small className="inline-note">استخدام رقم واحد لأكثر من حساب سيتاح عند تفعيل تأكيد الهاتف.</small>)}{mode==='register'&&<>{!portal&&<label>نوع الحساب<Choice value={v.role} onChange={role=>setV({...v,role})} options={['student','parent','sheikh','assistant'].map(r=>({value:r,label:roleNames[r]}))}/></label>}{['student','parent','assistant'].includes(v.role)&&<><label>الفرع<Choice value={v.branch} onChange={branch=>setV({...v,branch,circle_id:''})} options={Array.from(new Set(options.map(c=>c.branch))).map(b=>({value:b,label:b}))} placeholder="اختر الفرع"/></label><label>الحلقة<Choice value={v.circle_id} onChange={circle_id=>setV({...v,circle_id})} options={options.filter(c=>c.branch===v.branch).map(c=>({value:c.id,label:c.name}))} placeholder="اختر الحلقة"/></label>{optionsError?<p role="alert">{optionsError}<button type="button" onClick={loadOptions}>إعادة المحاولة</button></p>:!options.length?<p>لا توجد حلقات متاحة للتسجيل حاليًا؛ تواصل مع الإدارة.</p>:null}{v.circle_id&&!options.find(c=>c.id===v.circle_id)?.has_teacher&&<small>لم يُسند شيخ لهذه الحلقة بعد؛ ستراجع الإدارة طلبك.</small>}{v.role==='parent'&&<label>اسم الابن كاملًا<input required value={v.child_name||''} onChange={e=>setV({...v,child_name:e.target.value})}/></label>}</>}<label>ملاحظات تساعد على مطابقة الحساب (اختياري)<input value={v.verification||''} onChange={e=>setV({...v,verification:e.target.value})}/></label>{v.role==='student'&&<><label>تاريخ الميلاد<input type="date" value={v.birthdate||''} onChange={e=>setV({...v,birthdate:e.target.value})}/></label><label>اسم ولي الأمر<input value={v.guardian_name||''} onChange={e=>setV({...v,guardian_name:e.target.value})}/></label><label>هاتف ولي الأمر<input type="tel" value={v.guardian_phone||''} onChange={e=>setV({...v,guardian_phone:e.target.value})}/></label></>}</>}<label>كلمة المرور<input type="password" minLength={8} autoComplete={mode==='login'?'current-password':'new-password'} required value={v.password||''} onChange={e=>setV({...v,password:e.target.value})}/></label>{mode!=='login'&&<label>تأكيد كلمة المرور<input type="password" minLength={8} autoComplete="new-password" required value={v.confirm||''} onChange={e=>setV({...v,confirm:e.target.value})}/></label>}{err&&<p className="form-error" role="alert">{err}</p>}<button className="primary" disabled={busy||mode==='register'&&(!v.photo||otpEnabled&&!v.phone_token)||mode==='setup'&&!state.canSetup||mode==='register'&&['student','parent','assistant'].includes(v.role)&&(!v.circle_id||!v.branch||!!optionsError)}>{busy?<LoaderCircle size={17} className="animate-spin"/>:null}{mode==='setup'?'إنشاء حساب الإدارة':mode==='register'?'إرسال طلب التسجيل':'تسجيل الدخول'}<ArrowUpLeft size={18}/></button>{mode==='setup'&&!state.canSetup&&<p>لم تُجهّز الإدارة بعد. على مسؤول السيرفر تشغيل أمر إنشاء حساب الإدارة.</p>}</form>{!state.setup&&portal!=='admin'&&<button className="auth-toggle" onClick={()=>{setMode(mode==='login'?'register':'login');setErr('');setSent(false);setCode('');setV({...v,photo:'',phone_token:''});}}>{mode==='login'?'ليس لديك حساب؟ اطلب الانضمام':'لديك حساب؟ سجل الدخول'}</button>}<a className="auth-toggle" href="/portals">بوابة الشيخ · المساعد · الطالب · ولي الأمر · الإدارة</a><small className="auth-help">نسيت كلمة المرور؟ تواصل مع إدارة الدار لإعادة تعيينها.</small></section></div><SiteFooter/></div>;
-}
-function SettingsPanel({state,refresh,run}:any){const [v,setV]=useState(JSON.parse(state.settings)),[busy,setBusy]=useState(false),[password,setPassword]=useState('');async function backup(){if(password.length<10){toast.error('اكتب عبارة حماية للنسخة من 10 أحرف على الأقل');return;}setBusy(true);try{const r=await fetch(api+'?action=backup');const data:any=await r.json();if(!r.ok)throw new Error(data.error);const salt=crypto.getRandomValues(new Uint8Array(16)),iv=crypto.getRandomValues(new Uint8Array(12));const e=new TextEncoder();const base=await crypto.subtle.importKey('raw',e.encode(password),'PBKDF2',false,['deriveKey']);const key=await crypto.subtle.deriveKey({name:'PBKDF2',salt,iterations:200000,hash:'SHA-256'},base,{name:'AES-GCM',length:256},false,['encrypt']);const cipher=await crypto.subtle.encrypt({name:'AES-GCM',iv},key,e.encode(JSON.stringify(data)));const b64=(a:Uint8Array)=>btoa(Array.from(a,x=>String.fromCharCode(x)).join(''));const blob=new Blob([JSON.stringify({format:'dar-backup-v1',salt:b64(salt),iv:b64(iv),cipher:b64(new Uint8Array(cipher))})],{type:'application/json'});const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download=`dar-backup-${today()}.encrypted.json`;a.click();URL.revokeObjectURL(url);toast.success('تم تنزيل نسخة مشفرة من قاعدة البيانات');}catch(e:any){toast.error(e.message);}finally{setBusy(false);}}
-async function restore(file:File){if(password.length<10){toast.error('اكتب عبارة حماية النسخة أولًا');return;}if(!window.confirm('سيتم استرجاع السجلات المفقودة فقط، مع الحفاظ على السجلات الحالية. متابعة؟'))return;setBusy(true);try{const b=JSON.parse(await file.text());if(b.format!=='dar-backup-v1')throw new Error('نسخة غير صالحة');const bytes=(s:string)=>Uint8Array.from(atob(s),c=>c.charCodeAt(0));const base=await crypto.subtle.importKey('raw',new TextEncoder().encode(password),'PBKDF2',false,['deriveKey']);const key=await crypto.subtle.deriveKey({name:'PBKDF2',salt:bytes(b.salt),iterations:200000,hash:'SHA-256'},base,{name:'AES-GCM',length:256},false,['decrypt']);const plain=await crypto.subtle.decrypt({name:'AES-GCM',iv:bytes(b.iv)},key,bytes(b.cipher));await call('restore',{snapshot:JSON.parse(new TextDecoder().decode(plain))});await refresh();toast.success('تم استرجاع السجلات المفقودة');}catch(e:any){toast.error(e.name==='OperationError'?'عبارة الحماية غير صحيحة أو النسخة تالفة':e.message);}finally{setBusy(false);}}
-return <div className="settings-grid"><section className="panel padded"><h2>بيانات الدار</h2><form onSubmit={async e=>{e.preventDefault();await run('settings',v);}}><label>رقم التواصل<input value={v.contact||''} onChange={e=>setV({...v,contact:e.target.value})}/></label><label>العنوان<input value={v.address||''} onChange={e=>setV({...v,address:e.target.value})}/></label><label>فترة السماح للاشتراك بالأيام<input type="number" min="0" value={v.overdue_days||0} onChange={e=>setV({...v,overdue_days:Number(e.target.value)})}/></label><label className="switch-label"><span>تقييد خطة الحفظ عند تجاوز فترة السماح</span><Switch checked={!!v.restrict_access} onCheckedChange={c=>setV({...v,restrict_access:c})}/></label><label className="switch-label"><span>تفعيل مواعيد رمضان</span><Switch checked={!!v.ramadan} onCheckedChange={c=>setV({...v,ramadan:c})}/></label><button className="primary">حفظ الإعدادات</button></form></section><section className="panel padded"><h2>نسخة احتياطية مشفرة</h2><p>تضم الحسابات والسجلات والعلاقات. ملفات الإيصالات محفوظة منفصلة. احتفظ بعبارة الحماية في مكان آمن.</p><label>عبارة حماية النسخة<input type="password" minLength={10} value={password} onChange={e=>setPassword(e.target.value)}/></label><button className="secondary" onClick={backup} disabled={busy}><Download size={17}/> تنزيل النسخة</button><label className="mt-5">استرجاع السجلات المفقودة<input type="file" accept="application/json" disabled={busy} onChange={e=>{const f=e.target.files?.[0];if(f)restore(f);}}/></label><small>تسترجع حتى 5000 سجل في العملية الواحدة دون استبدال البيانات الحالية.</small></section></div>;
+import {toast, Toaster} from 'sonner';
+
+const api = '/api/app';
+const roleNames: any = {
+    admin: 'الإدارة',
+    sheikh: 'الشيخ',
+    assistant: 'المساعد',
+    student: 'الطالب',
+    parent: 'ولي الأمر'
+};
+const kindNames: any = {
+    registration: 'طلب تسجيل',
+    attendance: 'الحضور والانصراف',
+    memorization: 'الحفظ الجديد',
+    revision: 'المراجعة',
+    assessment: 'التقييمات',
+    plan: 'خطة الحفظ',
+    subscription: 'الاشتراكات',
+    payment: 'المدفوعات',
+    expense: 'مصروفات المشايخ',
+    salary: 'كشوف المرتبات',
+    salary_config: 'نظام المرتب',
+    staff_attendance: 'حضور الفريق',
+    message: 'الرسائل',
+    notification: 'الإشعارات',
+    note: 'الملاحظات',
+    transfer: 'نقل وتغيير مستوى',
+    waitlist: 'قائمة الانتظار',
+    content: 'محتوى الموقع'
+};
+const statuses: any = {
+    active: 'نشط',
+    pending: 'قيد المراجعة',
+    rejected: 'مرفوض',
+    suspended: 'موقوف',
+    approved: 'معتمد',
+    due: 'مستحق',
+    paid: 'مسدد',
+    partial: 'مسدد جزئيًا',
+    overdue: 'متأخر',
+    assigned: 'مطلوب',
+    completed: 'مكتمل',
+    locked: 'مقفل',
+    open: 'حاضر الآن',
+    closed: 'مكتمل',
+    draft: 'مسودة',
+    published: 'منشور',
+    waiting: 'في الانتظار',
+    notified: 'تم الإشعار',
+    read: 'مقروء',
+    unread: 'جديد',
+    void: 'ملغي',
+    paused: 'متوقف',
+    archived: 'مؤرشف'
+};
+const fmt = (n: number) => new Intl.NumberFormat('ar-EG', {maximumFractionDigits: 0}).format(n || 0);
+const cash = (n: number) => new Intl.NumberFormat('ar-EG', {style: 'currency', currency: 'EGP'}).format((n || 0) / 100);
+const today = () => new Date().toISOString().slice(0, 10);
+const pretty = (d: string) => d ? new Date(d.length === 10 ? d + 'T12:00:00' : d).toLocaleDateString('ar-EG', {
+    day: 'numeric',
+    month: 'short',
+    year: 'numeric'
+}) : '—';
+
+async function call(action: string, data: any = {}) {
+    const r = await fetch(api, {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({action, data})
+    });
+    const v: any = await r.json();
+    if (!r.ok) throw new Error(v.error);
+    return v;
 }
 
-function RegistrationRequests({requests,students,circles,refresh}:any){
-const [selected,setSelected]=useState<any>(null),[v,setV]=useState<any>({}),[busy,setBusy]=useState(false),[error,setError]=useState('');
-async function submit(e:any){e.preventDefault();setBusy(true);setError('');try{await call('review_registration',{...v,id:selected.id});await refresh();setSelected(null);toast.success(v.decision==='approved'?'تم تفعيل الحساب وربط بياناته':'تم رفض الطلب');}catch(e:any){setError(e.message);}finally{setBusy(false);}}
-return <section className="panel padded"><h2>طلبات الانضمام للحلقات</h2><p>راجع بيانات مقدم الطلب والحلقة. طلبات المساعدين تعتمدها الإدارة وتربطهم بالحَلقة مباشرة.</p>{!requests.length?<Empty title="لا توجد طلبات تسجيل" text="تظهر هنا طلبات الانضمام المتاحة لك للمراجعة."/>:<Table><TableHeader><TableRow><TableHead>مقدم الطلب</TableHead><TableHead>الطالب</TableHead><TableHead>الفرع والحلقة</TableHead><TableHead>الحالة</TableHead><TableHead>المراجعة</TableHead></TableRow></TableHeader><TableBody>{requests.map((r:any)=><TableRow key={r.id}><TableCell><strong>{r.name}</strong><small>{roleNames[r.role]} · {r.phone}</small></TableCell><TableCell>{r.data.child_name}<small>{r.data.verification}</small></TableCell><TableCell>{r.data.branch}<small>{circles.find((c:any)=>c.id===r.circle_id)?.name||'حلقة مؤرشفة'}</small></TableCell><TableCell><Badge value={r.status}/>{r.status==='pending'&&r.account_status!=='pending'&&<small>عالجت الإدارة الحساب بالفعل</small>}</TableCell><TableCell>{r.status==='pending'&&r.account_status==='pending'?<button className="secondary" onClick={()=>{setSelected(r);setV({decision:'approved',verified:false});setError('');}}>مراجعة الطلب</button>:<small>{r.data.reason||'تمت المعالجة'}</small>}</TableCell></TableRow>)}</TableBody></Table>}
-<Dialog open={!!selected} onOpenChange={o=>{if(!o&&!busy)setSelected(null);}}><DialogContent dir="rtl"><DialogHeader><DialogTitle>مراجعة طلب {selected?.name}</DialogTitle><DialogDescription>{selected?.role==='assistant'?'المساعد':'الطالب'}: {selected?.data.child_name} · الهاتف: {selected?.phone}</DialogDescription></DialogHeader><form onSubmit={submit}>{selected?.photo_id&&<div className="portrait-preview"><img src={api+'?action=avatar&id='+selected.user_id} alt="صورة مقدم الطلب"/></div>}<label>القرار<Choice value={v.decision} onChange={decision=>setV({...v,decision})} options={[{value:'approved',label:'الموافقة وربط الحساب'},{value:'rejected',label:'رفض الطلب'}]}/></label>{v.decision==='approved'&&selected?.role==='assistant'&&<p className="inline-note">الموافقة تفعّل حساب المساعد وتربطه بالحَلقة المطلوبة. تحدد الإدارة أجره من الفريق والمرتبات.</p>}{v.decision==='approved'&&<>{selected?.role==='student'&&<label className="switch-label"><span>إنشاء ملف جديد إذا لم يكن الطالب مسجلًا</span><Checkbox checked={!!v.new_profile} onCheckedChange={new_profile=>setV({...v,new_profile,student_id:''})}/></label>}{selected?.role!=='assistant'&&!v.new_profile&&<label>ملف الطالب في هذه الحلقة<Choice value={v.student_id} onChange={student_id=>setV({...v,student_id})} options={students.filter((s:any)=>s.circle_id===selected?.circle_id&&s.status==='active').map((s:any)=>({value:s.id,label:s.name+' · '+(s.details?.guardian_name||s.phone||s.id.slice(0,8))}))}/></label>}{selected?.role==='parent'&&!students.some((s:any)=>s.circle_id===selected.circle_id&&s.status==='active')&&<p>لا يوجد ملف طالب نشط هنا. اطلب من الإدارة إضافة ملف الابن أولًا، ثم راجع الطلب.</p>}<label className="switch-label"><span>تحققت من هوية صاحب الحساب وصحة الحلقة المطلوبة</span><Checkbox checked={!!v.verified} onCheckedChange={verified=>setV({...v,verified:verified===true})}/></label></>}<label>ملاحظات القرار<textarea value={v.reason||''} onChange={e=>setV({...v,reason:e.target.value})}/></label>{error&&<p className="form-error" role="alert">{error}</p>}<button className="primary" disabled={busy||v.decision==='approved'&&(!v.verified||selected?.role!=='assistant'&&!v.new_profile&&!v.student_id)}>{busy?'جارٍ الحفظ…':'تأكيد القرار'}</button></form></DialogContent></Dialog></section>;
+function Badge({value}: { value: string }) {
+    return <span className={`badge status-${value}`}>{statuses[value] || value}</span>;
+}
+
+function Choice({value, onChange, options, placeholder = 'اختر', id}: {
+    value: any,
+    onChange: (v: string) => void,
+    options: any[],
+    placeholder?: string,
+    id?: string
+}) {
+    return <Select dir="rtl" value={String(value || '__none')}
+                   onValueChange={v => onChange(v === '__none' ? '' : v)}><SelectTrigger id={id}
+                                                                                         className="choice"><SelectValue
+        placeholder={placeholder}/></SelectTrigger><SelectContent><SelectItem
+        value="__none">{placeholder}</SelectItem>{options.filter(x => x.value).map(x => <SelectItem key={x.value}
+                                                                                                    value={String(x.value)}>{x.label}</SelectItem>)}
+    </SelectContent></Select>;
+}
+
+function Empty({title = 'لا توجد سجلات بعد', text = 'ستظهر البيانات هنا بعد تسجيلها.', action}: {
+    title?: string,
+    text?: string,
+    action?: React.ReactNode
+}) {
+    return <div className="empty">
+        <div className="empty-icon"><BookOpen size={28}/></div>
+        <h3>{title}</h3><p>{text}</p>{action}</div>;
+}
+
+function Logo() {
+    return <div className="brand"><img src="/logo.jpg" alt="شعار دار الطفل المسلم"/>
+        <div><strong>دار الطفل المسلم</strong><small>لنشأة جيل أفضل</small></div>
+    </div>;
+}
+
+const navs: any[] = [['dashboard', 'نظرة عامة', LayoutDashboard, 'الرئيسية'], ['students', 'الطلاب', Users, 'إدارة الدار'], ['circles', 'الحلقات', BookOpen, 'إدارة الدار'], ['accounts', 'طلبات وحسابات', ShieldCheck, 'إدارة الدار'], ['requests', 'طلبات التسجيل', ClipboardList, 'إدارة الدار'], ['attendance', 'الحضور والانصراف', CalendarCheck, 'المتابعة التعليمية'], ['learning', 'الحفظ والمراجعة', BookMarked, 'المتابعة التعليمية'], ['finance', 'الاشتراكات والمدفوعات', Wallet, 'الشؤون المالية'], ['staff', 'الفريق والمرتبات', GraduationCap, 'الشؤون المالية'], ['messages', 'الرسائل والإشعارات', MessagesSquare, 'التواصل والمتابعة'], ['reports', 'التقارير', ChartNoAxesCombined, 'التواصل والمتابعة'], ['content', 'الموقع التعريفي', Globe, 'الإعدادات'], ['audit', 'سجل النشاط', ClipboardList, 'الإعدادات'], ['settings', 'الإعدادات', Settings, 'الإعدادات']];
+export default function Academy({portal}: { portal?: string }) {
+    const [state, setState] = useState<any>(null), [loading, setLoading] = useState(true), [error, setError] = useState(''), [view, setView] = useState('dashboard'), [search, setSearch] = useState(''), [tab, setTab] = useState('memorization'), [selected, setSelected] = useState(''), [modal, setModal] = useState<any>(null), [values, setValues] = useState<any>({}), [busy, setBusy] = useState(false), [formError, setFormError] = useState(''), [dateFrom, setDateFrom] = useState(''), [dateTo, setDateTo] = useState(''), [reportKind, setReportKind] = useState('attendance'), [sort, setSort] = useState('newest');
+
+    async function refresh() {
+        try {
+            const r = await fetch(api);
+            const d: any = await r.json();
+            if (!r.ok) throw new Error(d.error);
+            setState(d);
+            setError('');
+        } catch (e: any) {
+            setError(e.message);
+        } finally {
+            setLoading(false);
+        }
+    }
+
+    useEffect(() => {
+        refresh();
+        const timer = setInterval(() => {
+            if (document.visibilityState === 'visible') refresh();
+        }, 30000);
+        const focus = () => refresh();
+        window.addEventListener('focus', focus);
+        return () => {
+            clearInterval(timer);
+            window.removeEventListener('focus', focus);
+        };
+    }, []);
+    const go = (v: string) => {
+        setView(v);
+        setSearch('');
+        if (!['parent', 'student'].includes(state?.user?.role)) setSelected('');
+        setDateFrom('');
+        setDateTo('');
+        setTab(v === 'finance' ? 'subscription' : v === 'staff' ? 'staff_attendance' : v === 'messages' ? 'message' : 'memorization');
+    };
+    useEffect(() => {
+        const c = (document as any).modelContext;
+        if (!c?.registerTool) return;
+        const ac = new AbortController();
+        try {
+            Promise.resolve(c.registerTool({
+                name: 'navigate_academy',
+                description: 'Open an academy section without modifying saved records',
+                inputSchema: {
+                    type: 'object',
+                    properties: {section: {type: 'string', enum: navs.map(n => n[0])}},
+                    required: ['section'],
+                    additionalProperties: false
+                },
+                annotations: {readOnlyHint: true},
+                execute: async (i: any) => {
+                    if (!navs.some(n => n[0] === i.section)) throw new Error('Unknown section');
+                    go(i.section);
+                    return {section: i.section};
+                }
+            }, {signal: ac.signal})).catch(() => {
+            });
+        } catch {
+        }
+        return () => ac.abort();
+    }, []);
+    const u = state?.user, isAdmin = u?.role === 'admin', isTeacher = ['sheikh', 'assistant'].includes(u?.role),
+        canTeach = isAdmin || isTeacher;
+    const students = state?.students || [], circles = state?.circles || [], users = state?.users || [],
+        records = (state?.records || []).filter((r: any) => r.status !== 'void');
+    useEffect(() => {
+        if (['parent', 'student'].includes(u?.role) && students.length && !students.some((s: any) => s.id === selected)) setSelected(students[0].id);
+    }, [state, selected]);
+    const sheikhs = users.filter((x: any) => ['sheikh', 'assistant'].includes(x.role) && x.status === 'active');
+    const studentName = (id: string) => students.find((s: any) => s.id === id)?.name || '—';
+    const circleName = (id: string) => circles.find((c: any) => c.id === id)?.name || '—';
+    const userName = (id: string) => users.find((x: any) => x.id === id)?.name || 'حساب الدار';
+    const studentOptions = students.map((s: any) => ({value: s.id, label: s.name})),
+        circleOptions = circles.map((s: any) => ({value: s.id, label: s.name})),
+        teacherOptions = sheikhs.map((s: any) => ({value: s.id, label: s.name + ' · ' + roleNames[s.role]}));
+    const sum = (kind: string) => records.filter((r: any) => r.kind === kind).reduce((n: number, r: any) => n + r.amount, 0);
+    const paidFor = (id: string) => records.filter((r: any) => r.kind === 'payment' && r.parent_id === id).reduce((n: number, r: any) => n + r.amount, 0);
+    const outstanding = Math.max(0, sum('subscription') - sum('payment'));
+    const visibleNav = navs.filter(n => isAdmin || (!['accounts', 'content', 'audit', 'settings'].includes(n[0]) && (isTeacher ? n[0] !== 'finance' && (u.role !== 'assistant' || n[0] !== 'requests') : !['staff', 'requests'].includes(n[0]))));
+
+    function open(type: string, data: any = {}) {
+        setFormError('');
+        setModal({type});
+        setValues({date: today(), ...data});
+    }
+
+    async function run(action: string, data: any) {
+        setBusy(true);
+        try {
+            await call(action, data);
+            toast.success('تم الحفظ بنجاح');
+            await refresh();
+        } catch (e: any) {
+            toast.error(e.message);
+        } finally {
+            setBusy(false);
+        }
+    }
+
+    const opt = (vs: string[]) => vs.map(v => ({value: v, label: statuses[v] || v}));
+    const field = (name: string, label: string, type = 'text', options?: any[], required = false) => ({
+        name,
+        label,
+        type,
+        options,
+        required
+    });
+
+    function formFields(type: string): any[] {
+        switch (type) {
+            case 'connect_account': {
+                const account = users.find((a: any) => a.id === values.user_id);
+                return [field('user_id', 'الحساب', 'select', users.filter((a: any) => a.role !== 'admin').map((a: any) => ({
+                    value: a.id,
+                    label: `${a.name} · ${roleNames[a.role]}`
+                })), true), ...(['sheikh', 'assistant'].includes(account?.role) ? [field('circle_ids', 'الحلقات المسندة للحساب', 'multi', circleOptions)] : account?.role === 'parent' ? [field('student_ids', 'الأبناء المرتبطون بولي الأمر', 'multi', studentOptions)] : account?.role === 'student' ? [field('new_profile', 'إنشاء ملف من بيانات التسجيل', 'check'), ...(values.new_profile ? [field('level', 'مستوى الطالب', 'text', undefined, true), field('circle_id', 'الحلقة', 'select', circleOptions, true)] : [field('student_id', 'ملف الطالب الموجود', 'select', studentOptions, true)])] : [])];
+            }
+            case 'checkout':
+                return [field('time', 'وقت الانصراف', 'time', undefined, true)];
+            case 'student':
+                return [field('name', 'اسم الطالب كاملًا', 'text', undefined, true), field('phone', 'رقم الهاتف', 'tel'), field('birthdate', 'تاريخ الميلاد', 'date'), field('gender', 'النوع', 'select', opt(['ذكر', 'أنثى'])), field('guardian_name', 'اسم ولي الأمر'), field('guardian_phone', 'هاتف ولي الأمر', 'tel'), field('address', 'العنوان'), field('school', 'المدرسة'), field('circle_id', 'الحلقة', 'select', circleOptions), field('level', 'المستوى', 'text', undefined, true), field('enrollment_date', 'تاريخ الالتحاق', 'date'), field('status', 'حالة الطالب', 'select', opt(['active', 'paused', 'archived'])), field('notes', 'ملاحظات', 'textarea'), field('consent', 'موافقة ولي الأمر على نشر الإنجازات والصور', 'check')];
+            case 'circle':
+                return [field('name', 'اسم الحلقة', 'text', undefined, true), field('level', 'المستوى', 'text', undefined, true), field('type', 'نوع الحلقة', 'select', opt(['حضوري', 'أونلاين'])), field('schedule', 'الأيام والمواعيد', 'text', undefined, true), field('duration', 'مدة الحلقة بالدقائق', 'number'), field('capacity', 'الحد الأقصى للطلاب', 'number', undefined, true), field('fee', 'قيمة الاشتراك بالجنيه', 'number'), field('branch', 'الفرع'), field('ramadan_schedule', 'مواعيد رمضان'), field('teachers', 'المشايخ والمساعدون بالحَلقة', 'multi', teacherOptions), field('status', 'الحالة', 'select', opt(['active', 'paused', 'archived']))];
+            case 'link':
+                return [field('user_id', 'حساب الطالب أو ولي الأمر', 'select', users.filter((a: any) => ['student', 'parent'].includes(a.role) && a.status === 'active').map((a: any) => ({
+                    value: a.id,
+                    label: `${a.name} · ${roleNames[a.role]}`
+                })), true), field('student_id', 'ملف الطالب', 'select', studentOptions, true)];
+            case 'staff_attendance':
+                return [...(isAdmin ? [field('user_id', 'الشيخ أو المساعد', 'select', teacherOptions, true)] : []), field('mode', 'العملية', 'select', [{
+                    value: 'in',
+                    label: 'تسجيل حضور'
+                }, {value: 'out', label: 'تسجيل انصراف'}, {value: 'absent', label: 'تسجيل غياب'}, {
+                    value: 'excused',
+                    label: 'غياب بعذر'
+                }], true), ...(values.mode !== 'out' ? [field('circle_id', 'الحلقة', 'select', circles.filter((c: any) => c.status === 'active' && (state.assignments || []).some((a: any) => a.circle_id === c.id && a.user_id === (isAdmin ? values.user_id : u.id))).map((c: any) => ({
+                    value: c.id,
+                    label: c.name
+                })), true)] : []), ...(values.mode === 'in' ? [] : ['absent', 'excused'].includes(values.mode) ? [field('date', 'التاريخ', 'date', undefined, true), field('reason', 'سبب الغياب')] : [])];
+            case 'salary':
+                return [field('user_id', 'الشيخ أو المساعد', 'select', teacherOptions, true), field('month', 'شهر المرتب', 'month', undefined, true), field('additions', 'الإضافات بالجنيه', 'number'), field('deductions', 'الخصومات بالجنيه', 'number'), field('notes', 'ملاحظات التسوية', 'textarea')];
+            case 'password':
+                return [...(values.user_id ? [field('user_id', 'الحساب', 'select', users.map((x: any) => ({
+                    value: x.id,
+                    label: x.name
+                })), true)] : [field('current', 'كلمة المرور الحالية', 'password', undefined, true)]), field('password', 'كلمة المرور الجديدة', 'password', undefined, true), field('confirm', 'تأكيد كلمة المرور', 'password', undefined, true)];
+        }
+        let fs: any[] = [];
+        if (['attendance', 'memorization', 'revision', 'assessment', 'plan', 'subscription', 'payment', 'note', 'waitlist'].includes(type)) fs.push(field('student_id', 'الطالب', 'select', studentOptions, true));
+        if (!['message', 'content', 'salary_config'].includes(type)) fs.push(field('date', 'التاريخ', 'date', undefined, true));
+        if (type === 'attendance') fs.push(field('attendance', 'حالة الحضور', 'select', opt(['حاضر', 'غائب', 'متأخر', 'بعذر']), true), field('check_in', 'وقت الحضور', 'time'), field('check_out', 'وقت الانصراف', 'time'), field('notes', 'ملاحظات', 'textarea'));
+        if (['memorization', 'revision', 'plan'].includes(type)) fs.push(...(type === 'revision' ? [field('revision_type', 'نوع الماضي', 'select', opt(revisionTypes), true)] : []), field('surah', 'اسم السورة', 'text', undefined, true), field('from', 'من آية', 'number', undefined, true), field('to', 'إلى آية', 'number', undefined, true), ...(type === 'plan' ? [field('due', 'موعد التسميع', 'date', undefined, true), field('plan_type', 'نوع المطلوب', 'select', opt(planTypes), true)] : [field('rating', 'التقدير', 'select', opt(ratings), true), ...(type === 'revision' ? [field('percentage', 'النسبة المئوية (اختياري)', 'number')] : [])]), field('notes', 'الملاحظات', 'textarea'));
+        if (type === 'assessment') fs.push(field('from_surah', 'من سورة', 'text', undefined, true), field('to_surah', 'إلى سورة', 'text', undefined, true), field('score', 'نتيجة الاختبار ٪', 'number', undefined, true), field('notes', 'ملاحظات', 'textarea'));
+        if (type === 'note') fs.push(field('text', 'الملاحظة', 'textarea', undefined, true));
+        if (type === 'subscription') fs.push(field('title', 'اسم الاشتراك / الفترة', 'text', undefined, true), field('amount', 'القيمة بالجنيه', 'number', undefined, true), field('due', 'تاريخ الاستحقاق', 'date', undefined, true), field('subscription_type', 'النوع', 'select', opt(['شهري', 'دورة', 'سنوي'])), field('notes', 'ملاحظات'));
+        if (type === 'payment') fs.push(field('parent_id', 'الاشتراك', 'select', records.filter((r: any) => r.kind === 'subscription' && r.student_id === values.student_id && paidFor(r.id) < r.amount).map((r: any) => ({
+            value: r.id,
+            label: `${r.data.title} · المتبقي ${cash(r.amount - paidFor(r.id))}`
+        })), true), field('amount', 'المبلغ المدفوع بالجنيه', 'number', undefined, true), field('method', 'طريقة الدفع', 'select', opt(['نقدي', 'تحويل بنكي', 'محفظة إلكترونية']), true), field('reference', 'رقم المرجع / الإيصال'), field('notes', 'ملاحظات'));
+        if (type === 'expense') fs.push(...(isAdmin ? [field('user_id', 'الشيخ أو المساعد', 'select', teacherOptions, true)] : []), field('amount', 'قيمة المصروف بالجنيه', 'number', undefined, true), field('reason', 'سبب المصروف', 'text', undefined, true), field('category', 'نوع المصروف', 'select', opt(['انتقالات', 'مستلزمات تعليمية', 'أنشطة', 'أخرى']), true), field('receipt', 'صورة الإيصال أو PDF', 'file'), field('notes', 'ملاحظات', 'textarea'));
+        if (type === 'message') fs.push(...(isAdmin ? [field('user_id', 'مستلم محدد (أو اتركه للجميع)', 'select', users.filter((x: any) => x.status === 'active').map((x: any) => ({
+            value: x.id,
+            label: x.name
+        })))] : []), ...(canTeach ? [field('circle_id', 'حلقة محددة', 'select', circleOptions, isTeacher)] : []), field('text', 'الرسالة', 'textarea', undefined, true));
+        if (type === 'content') fs.push(field('category', 'القسم', 'select', opt(['عن الدار', 'برنامج', 'أخبار', 'نشاط', 'إنجاز', 'شيخ', 'تواصل', 'معرض']), true), field('title', 'العنوان', 'text', undefined, true), field('text', 'المحتوى', 'textarea', undefined, true), field('receipt', 'صورة القسم', 'file'), field('student_id', 'الطالب (للإنجازات)', 'select', studentOptions), field('status', 'حالة النشر', 'select', opt(['draft', 'published'])));
+        if (type === 'waitlist') fs.push(field('circle_id', 'الحلقة المطلوبة', 'select', circleOptions, true), field('notes', 'ملاحظات'));
+        if (type === 'salary_config') fs.push(field('user_id', 'الشيخ أو المساعد', 'select', teacherOptions, true), field('date', 'يسري من', 'date', undefined, true), field('method', 'نظام الحساب', 'select', [{
+            value: 'session',
+            label: 'بالحلقة حسب الحضور'
+        }, {value: 'hourly', label: 'بالساعة'}, {value: 'monthly', label: 'شهري ثابت'}, {
+            value: 'mixed',
+            label: 'ثابت + ساعات'
+        }], true), ...(['session', 'hourly', 'mixed'].includes(values.method) ? [field('rate', values.method === 'session' ? 'أجر الحلقة الواحدة بالجنيه' : 'أجر الساعة بالجنيه', 'number', undefined, true)] : []), ...(['monthly', 'mixed'].includes(values.method) ? [field('fixed', 'الراتب الثابت بالجنيه', 'number', undefined, true)] : []));
+        return fs;
+    }
+
+    async function save(e: React.FormEvent) {
+        e.preventDefault();
+        setBusy(true);
+        setFormError('');
+        try {
+            const t = modal.type;
+            const direct = ['connect_account', 'checkout', 'student', 'circle', 'link', 'staff_attendance', 'salary', 'password'];
+            if (direct.includes(t)) await call(t, values); else {
+                const {student_id, circle_id, user_id, date, amount, parent_id, status, ...data} = values;
+                await call('record', {kind: t, student_id, circle_id, user_id, date, amount, parent_id, status, data});
+            }
+            await refresh();
+            setModal(null);
+            toast.success('تم الحفظ بنجاح');
+        } catch (e: any) {
+            setFormError(e.message);
+        } finally {
+            setBusy(false);
+        }
+    }
+
+    function matches(x: any) {
+        return !search || JSON.stringify(x).toLowerCase().includes(search.toLowerCase());
+    }
+
+    function filtered(kind: string) {
+        return records.filter((r: any) => r.kind === kind && (!selected || r.student_id === selected || (['message', 'notification'].includes(kind) && (!r.student_id || r.student_id === selected) && (!r.circle_id || r.circle_id === students.find((s: any) => s.id === selected)?.circle_id))) && (!dateFrom || r.date >= dateFrom) && (!dateTo || r.date <= dateTo) && matches({
+            ...r,
+            student: studentName(r.student_id),
+            user: userName(r.user_id)
+        })).sort((a: any, b: any) => sort === 'oldest' ? a.date.localeCompare(b.date) : sort === 'name' ? studentName(a.student_id).localeCompare(studentName(b.student_id), 'ar') : b.date.localeCompare(a.date));
+    }
+
+    function details(r: any) {
+        const d = r.data;
+        switch (r.kind) {
+            case 'attendance':
+                return `${d.attendance} · ${d.check_in || '—'} ← ${d.check_out || '—'}`;
+            case 'memorization':
+            case 'revision':
+            case 'plan':
+            case 'assessment':
+                return learningSummary(r.kind, d);
+            case 'subscription':
+                return `${d.title} · الاستحقاق ${pretty(d.due)}`;
+            case 'payment':
+                return `${d.method} ${d.reference || ''}`;
+            case 'expense':
+                return `${d.category} · ${d.reason}`;
+            case 'staff_attendance':
+                if (!d.check_in) return `${d.attendance || 'غائب'} · ${d.reason || ''}`;
+                return `${d.late_minutes ? 'تأخير ' + d.late_minutes + ' دقيقة · ' : ''}${new Date(d.check_in).toLocaleTimeString('ar-EG', {
+                    hour: '2-digit',
+                    minute: '2-digit'
+                })} ← ${d.check_out ? new Date(d.check_out).toLocaleTimeString('ar-EG', {
+                    hour: '2-digit',
+                    minute: '2-digit'
+                }) : 'لم ينصرف'} · ${d.minutes || 0} دقيقة · ${d.sessions || 0} حلقة محتسبة`;
+            case 'salary':
+                return `${Number(d.hours).toFixed(1)} ساعة · ${d.sessions} حلقات · مصروفات ${cash(d.expenses)}`;
+            case 'salary_config':
+                return `${({
+                    hourly: 'بالساعة',
+                    session: 'بالحلقة',
+                    monthly: 'شهري',
+                    mixed: 'مختلط'
+                } as any)[d.method]} · ${cash(d.rate)} · الثابت ${cash(d.fixed)}`;
+            case 'transfer':
+                return `${circleName(d.from)} ← ${circleName(d.to)} · ${d.new_level}`;
+            default:
+                return d.text || d.title || d.notes || circleName(r.circle_id);
+        }
+    }
+
+    function exportCsv(kind: string) {
+        const rows = filtered(kind);
+        const esc = (v: any) => '"' + String(v ?? '').replace(/^[=+@-]/, "'").replace(/"/g, '""') + '"';
+        const txt = '\uFEFF' + [['التاريخ', 'الطالب', 'الحلقة', 'الشيخ / الحساب', 'التفاصيل', 'المبلغ بالجنيه', 'الحالة'], ...rows.map((r: any) => [r.date, studentName(r.student_id), circleName(r.circle_id), userName(r.user_id), details(r), r.amount / 100, statuses[r.status] || r.status])].map(row => row.map(esc).join(',')).join('\n');
+        const url = URL.createObjectURL(new Blob([txt], {type: 'text/csv;charset=utf-8'}));
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `dar-${kind}-${today()}.csv`;
+        a.click();
+        URL.revokeObjectURL(url);
+    }
+
+    function recordsTable(kind: string) {
+        const rows = filtered(kind);
+        return !rows.length ? <Empty text="لا توجد سجلات مطابقة. غيّر الفلاتر أو أضف سجلًا جديدًا."/> :
+            <Table><TableHeader><TableRow><TableHead>الطالب /
+                الحساب</TableHead><TableHead>التفاصيل</TableHead><TableHead>التاريخ</TableHead>{['subscription', 'payment', 'expense', 'salary'].includes(kind) &&
+                <TableHead>القيمة</TableHead>}<TableHead>الحالة</TableHead><TableHead>الإجراء</TableHead></TableRow></TableHeader><TableBody>{rows.map((r: any) => {
+                const paid = kind === 'subscription' ? paidFor(r.id) : 0;
+                const status = kind === 'subscription' ? (paid >= r.amount ? 'paid' : r.data.due < today() ? 'overdue' : paid ? 'partial' : 'due') : r.status;
+                return <TableRow
+                    key={r.id}><TableCell><strong>{r.student_id ? studentName(r.student_id) : userName(r.user_id || r.actor_id)}</strong><small>{circleName(r.circle_id)}</small></TableCell><TableCell
+                    className="detail-cell">{details(r)}{r.data.notes &&
+                    <small>{r.data.notes}</small>}{r.data.receipt &&
+                    <a href={`${api}?action=file&id=${r.data.receipt}`} target="_blank" rel="noreferrer"
+                       className="link">عرض
+                        الإيصال</a>}</TableCell><TableCell>{pretty(r.date)}</TableCell>{['subscription', 'payment', 'expense', 'salary'].includes(kind) &&
+                    <TableCell><strong>{cash(r.amount)}</strong>{kind === 'subscription' &&
+                        <small>المتبقي {cash(r.amount - paid)}</small>}</TableCell>}<TableCell><Badge
+                    value={status}/></TableCell><TableCell>
+                    <div
+                        className="row-actions">{kind === 'attendance' && canTeach && !r.data.check_out && ['حاضر', 'متأخر'].includes(r.data.attendance) &&
+                        <button onClick={() => open('checkout', {
+                            id: r.id,
+                            time: new Date().toLocaleTimeString('en-GB', {
+                                hour: '2-digit',
+                                minute: '2-digit',
+                                timeZone: 'Africa/Cairo'
+                            })
+                        })}>تسجيل انصراف</button>}{kind === 'expense' && isAdmin && r.status === 'pending' && <>
+                        <button disabled={busy}
+                                onClick={() => run('record_status', {id: r.id, status: 'approved'})}>اعتماد
+                        </button>
+                        <button disabled={busy} className="danger-text"
+                                onClick={() => run('record_status', {id: r.id, status: 'rejected'})}>رفض
+                        </button>
+                    </>}{kind === 'subscription' && isAdmin && paid < r.amount && <button
+                        onClick={() => open('payment', {
+                            student_id: r.student_id,
+                            parent_id: r.id,
+                            amount: (r.amount - paid) / 100,
+                            method: 'نقدي'
+                        })}>تسجيل دفعة</button>}{kind === 'plan' && u.role === 'student' && r.status === 'assigned' &&
+                        <button disabled={busy}
+                                onClick={() => run('record_status', {id: r.id, status: 'completed'})}>أنجزت
+                            المطلوب <Check size={14}/></button>}{kind === 'content' && isAdmin &&
+                        <button disabled={busy} onClick={() => run('record_status', {
+                            id: r.id,
+                            status: r.status === 'published' ? 'draft' : 'published'
+                        })}>{r.status === 'published' ? 'إلغاء النشر' : 'نشر'}</button>}{kind === 'waitlist' && isAdmin && r.status !== 'closed' &&
+                        <button disabled={busy} onClick={() => run('record_status', {id: r.id, status: 'closed'})}>إغلاق
+                            الطلب</button>}{kind === 'salary' && <button onClick={() => open('statement', {
+                        ...r.data,
+                        name: userName(r.user_id),
+                        date: r.date,
+                        net: r.amount
+                    })}>عرض الكشف</button>}</div>
+                </TableCell></TableRow>;
+            })}</TableBody></Table>;
+    }
+
+    function filters() {
+        return <div className="calm-filter">
+            <div className="filter-search">
+                <div className="searchbox"><Search size={18}/><input aria-label="بحث في السجلات" value={search}
+                                                                     onChange={e => setSearch(e.target.value)}
+                                                                     placeholder="ابحث بالاسم أو التفاصيل..."/></div>
+            </div>
+            <details className="filter-options">
+                <summary>تصفية
+                    وترتيب{(selected || dateFrom || dateTo || sort !== 'newest') ? ' · مفعّلة' : ''}</summary>
+                <div className="filterbar"><Choice value={selected} onChange={setSelected} options={studentOptions}
+                                                   placeholder="كل الطلاب"/><Choice value={sort} onChange={setSort}
+                                                                                    options={[{
+                                                                                        value: "newest",
+                                                                                        label: "الأحدث أولًا"
+                                                                                    }, {
+                                                                                        value: "oldest",
+                                                                                        label: "الأقدم أولًا"
+                                                                                    }, {
+                                                                                        value: "name",
+                                                                                        label: "حسب اسم الطالب"
+                                                                                    }]}/><input aria-label="من تاريخ"
+                                                                                                type="date"
+                                                                                                value={dateFrom}
+                                                                                                onChange={e => setDateFrom(e.target.value)}/><span>إلى</span><input
+                    aria-label="إلى تاريخ" type="date" value={dateTo} onChange={e => setDateTo(e.target.value)}/></div>
+            </details>
+        </div>;
+    }
+
+    if (loading) return <div className="loading-screen"><Logo/><Skeleton className="h-8 w-64"/><Skeleton
+        className="h-48 w-80"/><p>جارٍ تحميل الدار...</p></div>;
+    if (error && !state) return <div className="loading-screen"><Logo/><p role="alert">{error}</p>
+        <button className="primary" onClick={refresh}><RefreshCw size={16}/> إعادة المحاولة</button>
+    </div>;
+    if (!u) return <Auth state={state} refresh={refresh} portal={portal}/>;
+    if (portal && u.role !== portal) return <div className="loading-screen"><Logo/><h1>أنت مسجل
+        بحساب {roleNames[u.role]}</h1><p>بوابة {roleNames[portal]} مخصصة للحسابات المعتمدة بهذا الدور.</p><a
+        className="primary" href={'/' + u.role}>افتح بوابتي</a>
+        <button className="secondary" onClick={async () => {
+            await call('logout');
+            await refresh();
+        }}>تسجيل خروج للدخول بحساب آخر
+        </button>
+        <a className="text-btn" href="/portals">كل البوابات</a></div>;
+    const profile = students.find((s: any) => s.id === selected);
+    const pending = users.filter((a: any) => a.status === 'pending').length;
+    const attendanceToday = records.filter((r: any) => r.kind === 'attendance' && r.date === today());
+    const present = attendanceToday.filter((r: any) => ['حاضر', 'متأخر'].includes(r.data.attendance)).length;
+    const allGroups = Array.from(new Set(visibleNav.map(n => n[3])));
+    return <SidebarProvider style={{'--sidebar-width': '16.5rem'} as React.CSSProperties}><Toaster position="top-center"
+                                                                                                   richColors
+                                                                                                   dir="rtl"/><Sidebar
+        side="right"
+        className="academy-sidebar"><SidebarHeader><Logo/></SidebarHeader><SidebarContent>{allGroups.map((group: any) =>
+        <SidebarGroup key={group}>
+            <details className="nav-section"
+                     open={group === 'الرئيسية' || visibleNav.some(n => n[0] === view && n[3] === group)}>
+                <summary>{group}</summary>
+                <SidebarMenu>{visibleNav.filter(n => n[3] === group).map(([id, label, Icon]) => <SidebarMenuItem
+                    key={id}><SidebarMenuButton isActive={view === id} onClick={() => go(id)} tooltip={label}><Icon
+                    size={19}/><span>{(isTeacher ? {
+                    dashboard: 'حلقة اليوم',
+                    attendance: 'سجل الحضور',
+                    learning: 'سجل الحفظ والمراجعة',
+                    staff: 'حضوري ومرتبّي'
+                } : u.role === 'parent' ? {
+                    students: 'ملفات أبنائي',
+                    circles: 'حلقات أبنائي',
+                    learning: 'حفظ ومراجعة أبنائي',
+                    attendance: 'حضور أبنائي'
+                } : u.role === 'student' ? {
+                    students: 'ملفي',
+                    circles: 'حلقتي',
+                    learning: 'حفظي ومراجعتي',
+                    attendance: 'حضوري'
+                } : isTeacher ? {
+                    students: 'طلابي',
+                    circles: 'حلقاتي',
+                    staff: 'حضوري ومستحقاتي'
+                } : {} as any)[id] || label}</span>{id === 'requests' && (state.requests || []).some((r: any) => r.status === 'pending' && r.account_status === 'pending') &&
+                    <b className="nav-counter">{state.requests.filter((r: any) => r.status === 'pending' && r.account_status === 'pending').length}</b>}{id === 'accounts' && pending > 0 &&
+                    <b className="nav-counter">{pending}</b>}</SidebarMenuButton></SidebarMenuItem>)}</SidebarMenu>
+            </details>
+        </SidebarGroup>)}</SidebarContent><SidebarFooter><a className="text-btn" href="/portals"><Globe
+        size={17}/> بوابات الدار</a>
+        <button className="profile-mini" onClick={() => open('password')}><span
+            className="avatar">{u.details?.photo_id ? <img src={api + '?action=avatar&id=' + u.id}
+                                                           alt="صورتي"/> : u.name.slice(0, 1)}</span><span><strong>{u.name}</strong><small>{roleNames[u.role]}</small></span><Settings
+            size={16}/></button>
+        <button className="logout" onClick={async () => {
+            await call('logout');
+            await refresh();
+        }}><LogOut size={16}/> تسجيل الخروج
+        </button>
+    </SidebarFooter></Sidebar>
+        <SidebarInset className="main-surface">
+            <header className="topbar">
+                <div className="flex items-center gap-3"><SidebarTrigger/><img className="topbar-dar-logo"
+                                                                               src="/logo.jpg"
+                                                                               alt="شعار دار الطفل المسلم" width="60"
+                                                                               height="60"/><strong
+                    className="header-dar-name">دار الطفل المسلم</strong></div>
+                <div className="top-actions">
+                    <button className="icon-btn" aria-label="الإشعارات" onClick={() => {
+                        go('messages');
+                        setTab('notification');
+                    }}><Bell size={20}/>{records.some((r: any) => r.kind === 'notification' && r.status === 'unread') &&
+                        <i/>}</button>
+                </div>
+            </header>
+            <main className="page-content">{error && <div className="error-banner">{error}
+                <button onClick={refresh}>حاول مجددًا</button>
+            </div>}
+                {state.restrictions?.length > 0 &&
+                    <div className="inline-note">توجد اشتراكات متأخرة. راجع صفحة الاشتراكات أو تواصل مع
+                        الإدارة.{state.restrictions.some((r: any) => r.restricted) && " تم تقييد خطة الحفظ وفق إعدادات الدار حتى تسوية الاشتراك."}</div>}
+                <div className="page-heading">
+                    <div><p
+                        className="eyebrow">{view === 'dashboard' ? `بوابة ${roleNames[u.role]}` : 'دار الطفل المسلم'}</p>
+                        <h1>{view === 'dashboard' ? isTeacher ? 'حلقة اليوم' : `أهلًا بك، ${u.name.split(' ')[0]}` : navs.find(n => n[0] === view)?.[1]}</h1>
+                        <p>{view === 'dashboard' ? (isAdmin ? 'كل ما تحتاجه لمتابعة الدار، في مكان واحد.' : isTeacher ? 'الحضور والجديد والمراجعة والمطلوب القادم، في بطاقة واحدة.' : u.role === 'parent' ? 'تابع حفظ كل ابن وحضوره واشتراكه.' : 'المطلوب القادم وإنجازك وملاحظات الشيخ.') : ({
+                            students: 'ملف لكل طالب، ومتابعة لكل خطوة.',
+                            circles: 'تنظيم الحلقات والمواعيد والمشايخ المسؤولين.',
+                            accounts: 'راجع الطلبات واربط كل حساب بملفه الصحيح.',
+                            learning: 'من الحفظ الأول إلى الإتقان، خطوة بخطوة.',
+                            finance: 'سجل واضح للاشتراكات والمدفوعات والمتبقي.',
+                            staff: 'الحضور والمصروفات وكشوف المرتبات.',
+                            reports: 'بيانات الدار، جاهزة للمراجعة والطباعة.'
+                        } as any)[view] || ''}</p></div>
+                    <div className="heading-actions">{view === 'dashboard' && isAdmin &&
+                        <button className="primary" onClick={() => open('attendance', {attendance: 'حاضر'})}><Plus
+                            size={18}/> تسجيل حضور</button>}{view === 'students' && isAdmin &&
+                        <button className="primary" onClick={() => open('student', {status: 'active'})}><Plus
+                            size={18}/> إضافة طالب</button>}{view === 'circles' && isAdmin &&
+                        <button className="primary" onClick={() => open('circle', {
+                            capacity: 20,
+                            duration: 60,
+                            type: 'حضوري',
+                            status: 'active',
+                            teachers: []
+                        })}><Plus size={18}/> إضافة حلقة</button>}{view === 'accounts' &&
+                        <button className="primary" onClick={() => open('link')}><Link2 size={18}/> ربط حساب بطالب
+                        </button>}{view === 'content' && <><a className="secondary" href="/about" target="_blank">عرض
+                        الموقع <ArrowUpLeft size={16}/></a>
+                        <button className="primary" onClick={() => open('content', {status: 'draft'})}><Plus
+                            size={18}/> إضافة محتوى
+                        </button>
+                    </>}</div>
+                </div>
+                {view === 'dashboard' && isAdmin && <>
+                    <div className="stats-grid"><Stat title={isAdmin ? 'إجمالي الطلاب' : 'الطلاب المرتبطون بك'}
+                                                      value={fmt(students.length)} icon={Users}
+                                                      footer={`${circles.length} حلقات تعليمية`} tone="teal"/><Stat
+                        title="حضور اليوم" value={fmt(present)} icon={CalendarCheck}
+                        footer={`${fmt(attendanceToday.length)} سجل حضور اليوم`} tone="blue"/><Stat
+                        title={isTeacher ? 'حلقاتي' : 'إجمالي التحصيل'}
+                        value={isTeacher ? fmt(circles.length) : cash(sum('payment'))}
+                        icon={isTeacher ? BookOpen : Wallet}
+                        footer={isTeacher ? 'الحلقات المسندة إليك' : 'المدفوعات المسجلة'} tone="green"/><Stat
+                        title={isTeacher ? 'مصروفات قيد المراجعة' : 'اشتراكات متبقية'}
+                        value={isTeacher ? fmt(records.filter((r: any) => r.kind === 'expense' && r.status === 'pending').length) : cash(outstanding)}
+                        icon={Receipt} footer={isTeacher ? 'بانتظار اعتماد الإدارة' : 'الرصيد المستحق على الطلاب'}
+                        tone="amber"/></div>
+                    <div className="dashboard-grid">
+                        <section className="panel">
+                            <div className="panel-head">
+                                <div><h2>{canTeach ? 'حلقات الدار' : 'حلقاتي التعليمية'}</h2><p>المواعيد والطلاب في
+                                    لمحة</p></div>
+                                <button className="text-btn" onClick={() => go('circles')}>كل الحلقات <ArrowUpLeft
+                                    size={16}/></button>
+                            </div>
+                            {circles.length ?
+                                <div className="circle-summary">{circles.slice(0, 4).map((c: any) => <div key={c.id}
+                                                                                                          className="circle-summary-row">
+                                    <span className="tile-icon"><BookOpen size={21}/></span>
+                                    <div><strong>{c.name}</strong><small>{c.schedule}</small></div>
+                                    <div className="circle-count">
+                                        <b>{fmt(students.filter((s: any) => s.circle_id === c.id).length)}</b><small>طالب</small>
+                                    </div>
+                                    <Badge value={c.type}/></div>)}</div> : <Empty title="ابدأ بأول حلقة"
+                                                                                   text={isAdmin ? 'أضف مواعيد الحلقة والمستوى، ثم ألحق الطلاب بها.' : 'ستظهر حلقاتك بعد ربط الحساب من الإدارة.'}
+                                                                                   action={isAdmin ?
+                                                                                       <button className="secondary"
+                                                                                               onClick={() => open('circle', {
+                                                                                                   type: 'حضوري',
+                                                                                                   status: 'active',
+                                                                                                   capacity: 20,
+                                                                                                   teachers: []
+                                                                                               })}>إضافة حلقة <Plus
+                                                                                           size={16}/>
+                                                                                       </button> : undefined}/>}
+                        </section>
+                        <section className="panel attention">
+                            <div className="panel-head">
+                                <div><h2>يحتاج متابعتك</h2><p>الخطوة التالية تبدأ من هنا</p></div>
+                                <Clock size={20}/></div>
+                            {isAdmin ? <>
+                                <button className="attention-row" onClick={() => go('accounts')}><span
+                                    className="attention-icon"><Users
+                                    size={19}/></span><span><strong>طلبات الحسابات</strong><small>بانتظار المراجعة والربط</small></span><b>{fmt(pending)}</b><ChevronLeft
+                                    size={16}/></button>
+                                <button className="attention-row" onClick={() => {
+                                    go('staff');
+                                    setTab('expense');
+                                }}><span className="attention-icon amber"><Receipt size={19}/></span><span><strong>مصروفات المشايخ</strong><small>بانتظار الاعتماد</small></span><b>{fmt(records.filter((r: any) => r.kind === 'expense' && r.status === 'pending').length)}</b><ChevronLeft
+                                    size={16}/></button>
+                                <button className="attention-row" onClick={() => go('finance')}><span
+                                    className="attention-icon blue"><Wallet size={19}/></span><span><strong>اشتراكات متأخرة</strong><small>مراجعة الرصيد والتواصل</small></span><b>{fmt(records.filter((r: any) => r.kind === 'subscription' && r.data.due < today() && paidFor(r.id) < r.amount).length)}</b><ChevronLeft
+                                    size={16}/></button>
+                            </> : <>
+                                <button className="attention-row" onClick={() => {
+                                    go('learning');
+                                    setTab('plan');
+                                }}>
+                                    <BookMarked/><span><strong>المطلوب للحلقة القادمة</strong><small>الحفظ والمراجعة</small></span><ChevronLeft/>
+                                </button>
+                                <button className="attention-row" onClick={() => go('messages')}><MessagesSquare/><span><strong>رسائل الدار</strong><small>آخر الأخبار والملاحظات</small></span><ChevronLeft/>
+                                </button>
+                            </>}</section>
+                    </div>
+                    <details className="calm-details">
+                        <summary>الإحصائيات وآخر النشاط</summary>
+                        <div className="calm-details-body">
+                            <div className="dashboard-grid">
+                                <section className="panel">
+                                    <div className="panel-head">
+                                        <div><h2>متابعة الحفظ</h2><p>الإنجاز المسجل لكل طالب</p></div>
+                                        <BookMarked size={21}/></div>
+                                    {students.length ?
+                                        <div className="progress-list">{students.slice(0, 4).map((s: any) => {
+                                            const plans = records.filter((r: any) => r.kind === 'plan' && r.student_id === s.id);
+                                            const done = plans.filter((r: any) => r.status === 'completed').length;
+                                            const ratio = plans.length ? Math.round(done / plans.length * 100) : 0;
+                                            return <div key={s.id}>
+                                                <div className="spread">
+                                                    <strong>{s.name}</strong><span>{plans.length ? `${ratio}%` : 'لم تحدد خطة بعد'}</span>
+                                                </div>
+                                                <Progress
+                                                    value={ratio}/><small>{records.filter((r: any) => r.kind === 'memorization' && r.student_id === s.id).length} سجل
+                                                حفظ · {done} من {plans.length} تكليف مكتمل</small></div>;
+                                        })}</div> : <Empty title="لكل طالب رحلة تستحق المتابعة"
+                                                           text="أضف الطلاب وسجل الحفظ والمراجعة لتظهر المتابعة هنا."/>}
+                                </section>
+                                <section className="panel">
+                                    <div className="panel-head">
+                                        <div><h2>آخر النشاط</h2><p>أحدث ما تم تسجيله في الدار</p></div>
+                                        <button className="text-btn"
+                                                onClick={() => go(isAdmin ? 'audit' : 'reports')}>عرض الكل
+                                        </button>
+                                    </div>
+                                    <div className="activity-list">{records.slice(0, 5).map((r: any) => <div key={r.id}>
+                                        <span className="activity-dot"/>
+                                        <div><strong>{kindNames[r.kind] || r.kind}</strong>
+                                            <p>{r.student_id ? studentName(r.student_id) : details(r)}</p>
+                                            <small>{pretty(r.created)}</small></div>
+                                    </div>)}{!records.length && <Empty title="البداية من هنا"
+                                                                       text="كل حضور وتسميع ودفعة تُسجّل ستظهر في سجل النشاط."/>}</div>
+                                </section>
+                            </div>
+                            {isAdmin && <div className="dashboard-grid">
+                                <section className="panel">
+                                    <div className="panel-head">
+                                        <div><h2>الحضور حسب الحلقة</h2><p>الحضور المسجل خلال آخر 30 يومًا</p></div>
+                                    </div>
+                                    <div className="analytics-bars">{circles.length ? circles.map((c: any) => {
+                                        const rr = records.filter((r: any) => r.kind === 'attendance' && r.circle_id === c.id && Date.now() - Date.parse(r.date) < 30 * 86400000);
+                                        const percent = rr.length ? Math.round(rr.filter((r: any) => ['حاضر', 'متأخر'].includes(r.data.attendance)).length / rr.length * 100) : 0;
+                                        return <div className="analytics-row" key={c.id}><span>{c.name}</span>
+                                            <div className="analytics-track">
+                                                <div className="analytics-fill" style={{width: percent + '%'}}/>
+                                            </div>
+                                            <strong>{percent}%</strong></div>;
+                                    }) : <p className="muted">سيظهر توزيع الحضور بعد إضافة الحلقات وتسجيل
+                                        الجلسات.</p>}</div>
+                                </section>
+                                <section className="panel">
+                                    <div className="panel-head">
+                                        <div><h2>التحصيل الشهري</h2><p>إجمالي المدفوعات المسجلة</p></div>
+                                    </div>
+                                    <div className="analytics-bars">{Array.from({length: 4}, (_, i) => {
+                                        const d = new Date();
+                                        d.setMonth(d.getMonth() - (3 - i));
+                                        const month = d.toISOString().slice(0, 7);
+                                        const value = records.filter((r: any) => r.kind === 'payment' && r.date.startsWith(month)).reduce((n: number, r: any) => n + r.amount, 0);
+                                        return <div key={month} className="analytics-row">
+                                            <span>{d.toLocaleDateString('ar-EG', {month: 'long'})}</span>
+                                            <div className="analytics-track">
+                                                <div className="analytics-fill"
+                                                     style={{width: (sum('payment') ? value / sum('payment') * 100 : 0) + '%'}}/>
+                                            </div>
+                                            <strong>{fmt(value / 100)}</strong></div>;
+                                    })}<small>القيم بالجنيه المصري</small></div>
+                                </section>
+                            </div>}</div>
+                    </details>
+                    {isAdmin && <div className="quickbar"><span>وصول سريع</span>
+                        <button onClick={() => open('student', {status: 'active'})}><Users size={18}/> طالب جديد
+                        </button>
+                        <button onClick={() => open('memorization')}><BookMarked size={18}/> تسجيل تسميع</button>
+                        <button onClick={() => open('payment', {method: 'نقدي'})}><Wallet size={18}/> تسجيل دفعة
+                        </button>
+                        <button onClick={() => open('message')}><Send size={18}/> إرسال رسالة</button>
+                    </div>}</>}
+                {isTeacher &&
+                    <div style={{display: view === 'dashboard' ? 'block' : 'none'}}><TeacherLesson state={state}
+                                                                                                   refresh={refresh}
+                                                                                                   call={call}
+                                                                                                   onOpen={open}/>
+                    </div>}
+                {view === 'dashboard' && !isAdmin && !isTeacher &&
+                    <RoleHome user={u} students={students} circles={circles} records={records}
+                              assignments={state.assignments} users={users} childId={selected}
+                              onChooseChild={setSelected} onNavigate={go} onOpen={open}
+                              onComplete={(id: string) => run('record_status', {id, status: 'completed'})}
+                              busy={busy}/>}
+                {u.role === 'parent' && view !== 'dashboard' && students.length > 0 &&
+                    <div className="child-filter panel"><strong>متابعة الابن</strong><Choice value={selected}
+                                                                                             onChange={setSelected}
+                                                                                             options={studentOptions}
+                                                                                             placeholder="اختر ابنًا"/>
+                    </div>}
+                {view === 'students' && <>{selected && profile ? <>
+                    <button className="text-btn" onClick={() => setSelected('')}><ArrowRight size={16}/> كل الطلاب
+                    </button>
+                    <section className="panel student-profile"><span className="avatar large">{profile.name[0]}</span>
+                        <div><h2>{profile.name}</h2><p>{profile.level} · {circleName(profile.circle_id)}</p><p>ولي
+                            الأمر: {profile.details.guardian_name || '—'} · {profile.details.guardian_phone || '—'}</p>
+                            <p>تاريخ الالتحاق: {pretty(profile.details.enrollment_date)}</p>
+                            <p>{profile.details.notes}</p></div>
+                        {isAdmin && <button className="secondary"
+                                            onClick={() => open('student', {...profile, ...profile.details})}>تعديل
+                            الملف</button>}</section>
+                    <section className="panel">
+                        <div className="panel-head"><h2>رحلة الطالب</h2><Badge value={profile.status}/></div>
+                        <div className="timeline">{records.filter((r: any) => r.student_id === selected).map((r: any) =>
+                            <div key={r.id}><span className="activity-dot"/>
+                                <div><h3>{kindNames[r.kind]}</h3><p>{details(r)}</p>
+                                    <small>{pretty(r.date)} · {cash(r.amount)} {r.status === 'void' ? '· ملغي' : ''}</small>
+                                </div>
+                            </div>)}</div>
+                    </section>
+                </> : <section className="panel">{filters()}{students.filter(matches).length ?
+                    <Table><TableHeader><TableRow><TableHead>الطالب</TableHead><TableHead>الحلقة /
+                        المستوى</TableHead><TableHead>ولي
+                        الأمر</TableHead><TableHead>الحالة</TableHead><TableHead/></TableRow></TableHeader><TableBody>{students.filter(matches).map((s: any) =>
+                        <TableRow key={s.id}><TableCell>
+                            <div className="person"><span
+                                className="avatar">{s.name[0]}</span><span><strong>{s.name}</strong><small>{s.phone || 'لا يوجد هاتف'}</small></span>
+                            </div>
+                        </TableCell><TableCell>{circleName(s.circle_id)}<small>{s.level}</small></TableCell><TableCell>{s.details.guardian_name || '—'}<small>{s.details.guardian_phone}</small></TableCell><TableCell><Badge
+                            value={s.status}/></TableCell><TableCell>
+                            <button className="text-btn" onClick={() => setSelected(s.id)}>ملف الطالب <ChevronLeft
+                                size={16}/></button>
+                        </TableCell></TableRow>)}</TableBody></Table> : <Empty title="لا يوجد طلاب بعد"
+                                                                               text="أضف ملفات الطلاب، ثم اربط حساباتهم وحسابات أولياء الأمور بها."/>}</section>}</>}
+                {view === 'circles' && <>
+                    <div className="circle-grid">{circles.map((c: any) => {
+                        const count = students.filter((s: any) => s.circle_id === c.id).length;
+                        return <section className="panel circle-card" key={c.id}>
+                            <div className="spread"><span className="tile-icon"><BookOpen size={26}/></span><Badge
+                                value={c.status}/></div>
+                            <h2>{c.name}</h2><p>{c.level} · {c.type}</p>
+                            <div className="schedule-line"><Clock
+                                size={17}/>{JSON.parse(state.settings).ramadan && c.details.ramadan_schedule ? c.details.ramadan_schedule : c.schedule}
+                            </div>
+                            <div className="schedule-line"><GraduationCap
+                                size={17}/>{(state.assignments || []).filter((a: any) => a.circle_id === c.id).map((a: any) => userName(a.user_id)).join('، ') || 'لم يحدد شيخ'}
+                            </div>
+                            <div className="spread"><small>الطلاب
+                                المسجلون</small><strong>{count} / {c.capacity}</strong></div>
+                            <Progress value={count / c.capacity * 100}/>
+                            <div className="spread card-bottom"><span>{c.details.duration || 60} دقيقة</span>{isAdmin &&
+                                <button className="text-btn" onClick={() => open('circle', {
+                                    ...c, ...c.details,
+                                    fee: c.details.fee / 100,
+                                    teachers: state.assignments.filter((a: any) => a.circle_id === c.id).map((a: any) => a.user_id)
+                                })}>إدارة الحلقة <ChevronLeft size={16}/></button>}</div>
+                        </section>;
+                    })}</div>
+                    {!circles.length &&
+                        <section className="panel"><Empty title="لم تُضف حلقات بعد"/></section>}{isAdmin &&
+                    <section className="panel mt-6">
+                        <div className="panel-head"><h2>قائمة الانتظار</h2>
+                            <button className="secondary" onClick={() => open('waitlist')}>إضافة طلب <Plus size={16}/>
+                            </button>
+                        </div>
+                        {recordsTable('waitlist')}</section>}</>}
+                {view === 'requests' && canTeach &&
+                    <RegistrationRequests requests={state.requests || []} students={students} circles={circles}
+                                          refresh={refresh}/>}
+                {view === 'accounts' && <>
+                    <section className="panel connection-guide"><h2>اربط الدار في ثلاث خطوات</h2><p>١. فعّل حساب الشيخ
+                        وأسند حلقاته. ٢. اربط حساب الطالب بملفه وحلقته. ٣. اربط ولي الأمر بأبنائه.</p>
+                        <div className="heading-actions">
+                            <button className="primary" onClick={() => open('connect_account')}>تفعيل وربط حساب <Link2
+                                size={17}/></button>
+                            <a className="secondary" href="/portals">روابط البوابات <ArrowUpLeft size={17}/></a></div>
+                    </section>
+                    <section className="panel">
+                        <div className="filterbar">
+                            <div className="searchbox"><Search size={18}/><input value={search}
+                                                                                 onChange={e => setSearch(e.target.value)}
+                                                                                 placeholder="ابحث بالاسم أو الهاتف"/>
+                            </div>
+                            <Badge value="pending"/><span>{pending} طلب</span></div>
+                        <Table><TableHeader><TableRow><TableHead>الحساب</TableHead><TableHead>النوع</TableHead><TableHead>الحالة</TableHead><TableHead>الطلاب
+                            المرتبطون</TableHead><TableHead>الإجراءات</TableHead></TableRow></TableHeader><TableBody>{users.filter(matches).map((a: any) =>
+                            <TableRow key={a.id}><TableCell>
+                                <div className="person">{a.details.photo_id &&
+                                    <span className="avatar"><img src={api + '?action=avatar&id=' + a.id}
+                                                                  alt="الصورة الشخصية"/></span>}<strong>{a.name}</strong>
+                                </div>
+                                <small dir="ltr">{a.phone}</small><small
+                                dir="ltr">{a.details.username}</small><small>{a.details.verification}</small></TableCell><TableCell>{roleNames[a.role]}</TableCell><TableCell><Badge
+                                value={a.status}/></TableCell><TableCell>{['sheikh', 'assistant'].includes(a.role) && state.assignments.filter((l: any) => l.user_id === a.id).map((l: any) =>
+                                <div
+                                    key={l.id}>{circleName(l.circle_id)}</div>)}{state.links.filter((l: any) => l.user_id === a.id).map((l: any) =>
+                                <div key={l.id}>{studentName(l.student_id)}
+                                    <button className="danger-text" onClick={() => open('unlinkConfirm', {id: l.id})}>فك
+                                        الربط
+                                    </button>
+                                </div>)}</TableCell><TableCell>
+                                <div className="row-actions">{a.id !== u.id && <>{a.status !== 'active' && <button
+                                    onClick={() => open('connect_account', {
+                                        user_id: a.id,
+                                        student_ids: state.links.filter((l: any) => l.user_id === a.id).map((l: any) => l.student_id),
+                                        circle_ids: state.assignments.filter((l: any) => l.user_id === a.id).map((l: any) => l.circle_id)
+                                    })}>تفعيل وربط</button>}{a.status === 'pending' &&
+                                    <button disabled={busy} className="danger-text" onClick={() => run('account', {
+                                        id: a.id,
+                                        status: 'rejected'
+                                    })}>رفض</button>}{a.status === 'active' &&
+                                    <button disabled={busy} className="danger-text" onClick={() => run('account', {
+                                        id: a.id,
+                                        status: 'suspended'
+                                    })}>إيقاف</button>}
+                                    <button onClick={() => open('password', {user_id: a.id})}>كلمة المرور</button>
+                                    {a.status === 'active' && <button onClick={() => open('connect_account', {
+                                        user_id: a.id,
+                                        student_ids: state.links.filter((l: any) => l.user_id === a.id).map((l: any) => l.student_id),
+                                        student_id: state.links.find((l: any) => l.user_id === a.id)?.student_id,
+                                        circle_ids: state.assignments.filter((l: any) => l.user_id === a.id).map((l: any) => l.circle_id)
+                                    })}>إدارة الربط</button>}</>}</div>
+                            </TableCell></TableRow>)}</TableBody></Table></section>
+                </>}
+                {['attendance', 'learning', 'finance', 'staff'].includes(view) && <section className="panel">
+                    <div className="section-toolbar">{view !== 'attendance' && <Tabs value={tab} onValueChange={setTab}
+                                                                                     dir="rtl"><TabsList>{(view === 'learning' ? ['memorization', 'revision', 'plan', 'assessment', 'note'] : view === 'finance' ? ['subscription', 'payment'] : ['staff_attendance', 'expense', 'salary', 'salary_config']).map(t =>
+                        <TabsTrigger value={t} key={t}>{kindNames[t]}</TabsTrigger>)}</TabsList></Tabs>}
+                        <div
+                            className="heading-actions">{((view === 'attendance' || view === 'learning') ? canTeach : view === 'finance' ? isAdmin : tab === 'salary' || tab === 'salary_config' ? isAdmin : canTeach) &&
+                            <button className="primary"
+                                    onClick={() => open(view === 'attendance' ? 'attendance' : tab, {
+                                        ...(view === 'attendance' ? {attendance: 'حاضر'} : {}), ...(tab === 'staff_attendance' ? {
+                                            mode: 'in',
+                                            sessions: 1
+                                        } : {}), ...(tab === 'salary_config' ? {method: 'session'} : {})
+                                    })}><Plus size={17}/> {tab === 'salary' ? 'إنشاء وإقفال كشف' : 'إضافة سجل'}
+                            </button>}
+                            <button className="secondary"
+                                    onClick={() => exportCsv(view === 'attendance' ? 'attendance' : tab)}><Download
+                                size={17}/> تصدير
+                            </button>
+                        </div>
+                    </div>
+                    {filters()}{tab === 'salary' && view === 'staff' &&
+                    <p className="inline-note">في نظام بالحَلقة: المستحق = الحلقات المكتملة حضورًا وانصرافًا × أجر
+                        الحلقة الساري يوم الحضور. الغياب والحضور المفتوح لا يُحتسبان. الكشف يُقفل نهائيًا عند إنشائه.
+                        أدرج أي تصحيح لاحق في إضافات أو خصومات الشهر
+                        التالي.</p>}{recordsTable(view === 'attendance' ? 'attendance' : tab)}</section>}
+                {view === 'messages' && <section className="panel">
+                    <div className="section-toolbar"><Tabs dir="rtl" value={tab}
+                                                           onValueChange={setTab}><TabsList><TabsTrigger
+                        value="message">الرسائل</TabsTrigger><TabsTrigger
+                        value="notification">الإشعارات</TabsTrigger></TabsList></Tabs>
+                        <button className="primary" onClick={() => open('message')}><Send size={17}/> رسالة جديدة
+                        </button>
+                    </div>
+                    <div className="message-list">{filtered(tab).map((r: any) => <article key={r.id}><span
+                        className="avatar"><MessagesSquare size={20}/></span>
+                        <div>
+                            <div className="spread">
+                                <strong>{userName(r.actor_id)}</strong><small>{pretty(r.created)}</small></div>
+                            <p>{r.data.text}</p>
+                            <small>{r.circle_id ? circleName(r.circle_id) : r.user_id ? 'رسالة خاصة' : 'إعلان لجميع الدار'}</small>{r.user_id === u.id && r.status !== 'read' &&
+                            <button disabled={busy} className="text-btn"
+                                    onClick={() => run('record_status', {id: r.id, status: 'read'})}>تحديد
+                                كمقروء</button>}</div>
+                    </article>)}{!filtered(tab).length &&
+                        <Empty title="لا توجد رسائل هنا" text="الرسائل والتنبيهات الخاصة بك ستظهر هنا."/>}</div>
+                </section>}
+                {view === 'reports' && <section className="panel">
+                    <div className="section-toolbar"><Choice value={reportKind} onChange={setReportKind}
+                                                             options={Object.entries(kindNames).filter(([k]) => isAdmin || !['content', 'salary_config'].includes(k)).map(([k, v]) => ({
+                                                                 value: k,
+                                                                 label: v
+                                                             }))}/>
+                        <div className="heading-actions">
+                            <button className="secondary" onClick={() => exportCsv(reportKind)}><Download
+                                size={17}/> CSV / Excel
+                            </button>
+                            <button className="primary" onClick={() => window.print()}><Printer size={17}/> طباعة / PDF
+                            </button>
+                        </div>
+                    </div>
+                    {filters()}
+                    <div className="report-title"><h2>دار الطفل المسلم — {kindNames[reportKind]}</h2>
+                        <p>{dateFrom ? pretty(dateFrom) : 'من بداية التسجيل'} — {dateTo ? pretty(dateTo) : 'حتى اليوم'}</p>
+                        <strong>{filtered(reportKind).length} سجل {['subscription', 'payment', 'expense', 'salary'].includes(reportKind) && ` · الإجمالي ${cash(filtered(reportKind).reduce((n: number, r: any) => n + r.amount, 0))}`}</strong>
+                    </div>
+                    {recordsTable(reportKind)}</section>}
+                {view === 'content' && <section className="panel">{recordsTable('content')}</section>}
+                {view === 'audit' && <section className="panel">
+                    <div className="filterbar">
+                        <div className="searchbox"><Search size={18}/><input value={search}
+                                                                             onChange={e => setSearch(e.target.value)}
+                                                                             placeholder="بحث في سجل النشاط"/></div>
+                        <span className="muted">آخر 1000 عملية · سجل غير قابل للحذف</span></div>
+                    <Table><TableHeader><TableRow><TableHead>المستخدم</TableHead><TableHead>العملية</TableHead><TableHead>التوقيت</TableHead><TableHead>التفاصيل</TableHead></TableRow></TableHeader><TableBody>{state.audit.filter(matches).map((a: any) =>
+                        <TableRow key={a.id}><TableCell>{a.actor}</TableCell><TableCell>{kindNames[a.action] || ({
+                            student: 'تحديث ملف طالب',
+                            circle: 'تحديث حلقة',
+                            account_status: 'حالة حساب',
+                            link: 'ربط حساب',
+                            register: 'إنشاء حساب',
+                            settings: 'تحديث الإعدادات',
+                            record_status: 'تحديث حالة سجل',
+                            staff_in: 'حضور شيخ',
+                            staff_out: 'انصراف شيخ',
+                            salary_lock: 'إقفال المرتب',
+                            password_reset: 'تغيير كلمة المرور',
+                            unlink: 'فك ربط حساب'
+                        } as any)[a.action] || a.action}</TableCell><TableCell>{new Date(a.created).toLocaleString('ar-EG')}</TableCell><TableCell>
+                            <button className="text-btn" onClick={() => open('auditDetail', a)}>عرض التغيير</button>
+                        </TableCell></TableRow>)}</TableBody></Table></section>}
+                {view === 'settings' && <SettingsPanel state={state} refresh={refresh} run={run}/>}
+                <SiteFooter/>
+            </main>
+        </SidebarInset>
+        <Dialog open={!!modal} onOpenChange={v => {
+            if (!v) setModal(null);
+        }}><DialogContent className="academy-dialog" dir="rtl"><DialogHeader><DialogTitle>{({
+            connect_account: 'تفعيل الحساب وربط البيانات',
+            student: values.id ? 'تعديل ملف الطالب' : 'إضافة طالب جديد',
+            circle: values.id ? 'إدارة الحلقة' : 'إضافة حلقة جديدة',
+            checkout: 'تسجيل انصراف الطالب',
+            link: 'ربط حساب بملف طالب',
+            password: 'تغيير كلمة المرور',
+            statement: 'كشف المرتب',
+            auditDetail: 'تفاصيل التغيير',
+            unlinkConfirm: 'فك ارتباط الحساب'
+        } as any)[modal?.type] || kindNames[modal?.type] || 'إضافة سجل'}</DialogTitle><DialogDescription>{modal?.type === 'salary' ? 'راجع البيانات؛ لن يتغير الكشف بعد إقفاله.' : 'دار الطفل المسلم'}</DialogDescription></DialogHeader>{modal?.type === 'auditDetail' ?
+            <div className="audit-detail"><h3>قبل</h3>
+                <pre>{JSON.stringify(JSON.parse(values.before_value || 'null'), null, 2)}</pre>
+                <h3>بعد</h3>
+                <pre>{JSON.stringify(JSON.parse(values.after_value || 'null'), null, 2)}</pre>
+            </div> : modal?.type === 'unlinkConfirm' ?
+                <div><p>سيفقد الحساب الوصول إلى بيانات هذا الطالب. يبقى سجل الطالب محفوظًا.</p>
+                    <button className="primary" onClick={async () => {
+                        await run('unlink', {id: values.id});
+                        setModal(null);
+                    }}>تأكيد فك الربط
+                    </button>
+                </div> : modal?.type === 'statement' ? <div className="statement"><Logo/><h2>{values.name}</h2>
+                    <p>{pretty(values.date)}</p>{[['الساعات', Number(values.hours).toFixed(2)], ['عدد الحلقات', values.sessions], ['الأجر الأساسي', cash(values.base)], ['المصروفات المعتمدة', cash(values.expenses)], ['الإضافات', cash(values.additions)], ['الخصومات', cash(values.deductions)], ['صافي المستحق', cash(values.net)]].map(([a, b]) =>
+                        <div className="spread" key={a}><strong>{a}</strong><span>{b}</span></div>)}
+                    <div className="salary-lines">{values.lines?.map((l: any) => <div className="salary-line"
+                                                                                      key={l.attendance_id}>
+                        <span><strong>{l.circle_name}</strong><small>{pretty(l.date)}</small></span><span>{l.sessions} × {cash(l.rate)}</span><strong>{cash(l.amount)}</strong>
+                    </div>)}</div>
+                    <p>{values.notes}</p>
+                    <button className="primary" onClick={() => window.print()}><Printer size={17}/> طباعة الكشف</button>
+                </div> : <form onSubmit={save}>
+                    <div className="form-grid">{formFields(modal?.type).map(f => <label key={f.name}
+                                                                                        className={['textarea', 'multi', 'check', 'file'].includes(f.type) ? 'full' : ''}><span>{f.label}{f.required &&
+                        <em> *</em>}</span>{f.type === 'select' ? <Choice id={f.name} value={values[f.name]}
+                                                                          onChange={v => setValues({
+                                                                              ...values,
+                                                                              [f.name]: v, ...(f.name === 'student_id' ? {parent_id: ''} : {})
+                                                                          })}
+                                                                          options={f.options || []}/> : f.type === 'textarea' ?
+                        <textarea value={values[f.name] || ''}
+                                  onChange={e => setValues({...values, [f.name]: e.target.value})} required={f.required}
+                                  rows={3}/> : f.type === 'check' ? <Checkbox checked={!!values[f.name]}
+                                                                              onCheckedChange={v => setValues({
+                                                                                  ...values,
+                                                                                  [f.name]: v === true
+                                                                              })}/> : f.type === 'multi' ?
+                            <div className="checks">{f.options.length ? f.options.map((o: any) => <label
+                                    key={o.value}><Checkbox checked={(values[f.name] || []).includes(o.value)}
+                                                            onCheckedChange={v => setValues({
+                                                                ...values,
+                                                                [f.name]: v ? [...(values[f.name] || []), o.value] : (values[f.name] || []).filter((id: string) => id !== o.value)
+                                                            })}/>{o.label}</label>) :
+                                <p>لا يوجد حساب شيخ نشط بعد؛ يمكن إسناد الحلقة
+                                    لاحقًا.</p>}</div> : f.type === 'file' ? <><input type="file"
+                                                                                      accept="image/png,image/jpeg,image/webp,application/pdf"
+                                                                                      onChange={async e => {
+                                                                                          const f = e.target.files?.[0];
+                                                                                          if (!f) return;
+                                                                                          setBusy(true);
+                                                                                          try {
+                                                                                              const data = new FormData();
+                                                                                              data.append('file', f);
+                                                                                              const r = await fetch(api, {
+                                                                                                  method: 'POST',
+                                                                                                  body: data
+                                                                                              });
+                                                                                              const v: any = await r.json();
+                                                                                              if (!r.ok) throw new Error(v.error);
+                                                                                              setValues((old: any) => ({
+                                                                                                  ...old,
+                                                                                                  receipt: v.id
+                                                                                              }));
+                                                                                              toast.success('تم رفع الإيصال');
+                                                                                          } catch (e: any) {
+                                                                                              setFormError(e.message);
+                                                                                          } finally {
+                                                                                              setBusy(false);
+                                                                                          }
+                                                                                      }}/>{values.receipt &&
+                                    <small>تم رفع الإيصال</small>}</> :
+                                <input type={f.type} min={f.type === 'number' ? 0 : undefined}
+                                       step={f.type === 'number' ? 'any' : undefined} value={values[f.name] ?? ''}
+                                       onChange={e => setValues({...values, [f.name]: e.target.value})}
+                                       required={f.required}/>}</label>)}</div>
+                    {formError && <p className="form-error" role="alert">{formError}</p>}
+                    <div className="form-footer">
+                        <button className="primary" disabled={busy} type="submit">{busy ?
+                            <LoaderCircle size={17} className="animate-spin"/> : <Check
+                                size={17}/>} {modal?.type === 'salary' ? 'حساب وإقفال الكشف' : 'حفظ البيانات'}</button>
+                        <button className="secondary" type="button" onClick={() => setModal(null)}>إلغاء</button>
+                    </div>
+                </form>}</DialogContent></Dialog>
+    </SidebarProvider>;
+}
+
+function Stat({title, value, icon: Icon, footer, tone}: any) {
+    return <section className="stat-card">
+        <div className="spread"><span>{title}</span><span className={`stat-icon ${tone}`}><Icon size={21}/></span></div>
+        <h2>{value}</h2><small>{footer}</small></section>;
+}
+
+function Auth({state, refresh, portal}: any) {
+    const [mode, setMode] = useState(state.setup && (!portal || portal === 'admin') ? 'setup' : 'login'), [v, setV] = useState<any>({role: (portal && portal !== 'admin') ? portal : 'student'}), [err, setErr] = useState(''), [busy, setBusy] = useState(false), [success, setSuccess] = useState('');
+    const [options, setOptions] = useState<any[]>([]), [optionsError, setOptionsError] = useState(''), [otpEnabled, setOtpEnabled] = useState(false), [channel, setChannel] = useState('sms'), [code, setCode] = useState(''), [sent, setSent] = useState(false), [cooldown, setCooldown] = useState(0);
+    useEffect(() => {
+        if (!cooldown) return;
+        const t = setTimeout(() => setCooldown(cooldown - 1), 1000);
+        return () => clearTimeout(t);
+    }, [cooldown]);
+
+    async function verify(check = false) {
+        setBusy(true);
+        setErr('');
+        try {
+            const r = await call(check ? 'phone_check' : 'phone_send', {phone: v.phone, code});
+            if (check) setV({...v, phone_token: r.token}); else {
+                setSent(true);
+                setCooldown(60);
+            }
+        } catch (e: any) {
+            setErr(e.message);
+        } finally {
+            setBusy(false);
+        }
+    }
+
+    async function loadOptions() {
+        try {
+            const r = await fetch(api + '?action=signup_options');
+            const d: any = await r.json();
+            if (!r.ok) throw new Error(d.error);
+            setOptions(d.circles);
+            setOtpEnabled(!!d.phone_verification);
+            setChannel(d.otp_channel || 'sms');
+            setOptionsError('');
+        } catch {
+            setOptionsError('تعذر تحميل الحلقات. حاول مجددًا.');
+        }
+    }
+
+    useEffect(() => {
+        loadOptions();
+    }, []);
+
+    async function submit(e: any) {
+        e.preventDefault();
+        setBusy(true);
+        setErr('');
+        try {
+            const r = await call(mode, {...v, expected_role: portal});
+            if (mode === 'register') {
+                setSuccess(r.message + ' — اسم المستخدم: ' + r.username);
+                setMode('login');
+                setV({role: v.role, phone: r.username, password: ''});
+                setSent(false);
+                setCode('');
+            } else await refresh();
+        } catch (e: any) {
+            setErr(e.message);
+        } finally {
+            setBusy(false);
+        }
+    }
+
+    return <div className="auth-page">
+        <div className="auth-header"><Logo/><a href="/portals">كل البوابات <ArrowUpLeft size={16}/></a></div>
+        <div className="auth-layout">
+            <section className="auth-card"><p className="auth-quote">فاز من اتخذ القرآن صاحبًا</p>
+                <h2>{mode === 'setup' ? 'إعداد إدارة الدار' : mode === 'register' ? `إنشاء حساب ${roleNames[v.role]}` : portal ? `بوابة ${roleNames[portal]}` : 'أهلًا بعودتك'}</h2>
+                <p>{mode === 'setup' ? 'أنشئ حساب الإدارة الأول لتبدأ تنظيم الدار.' : mode === 'register' ? (['sheikh', 'assistant'].includes(v.role) ? 'تراجع الإدارة طلبك قبل تفعيل الحساب.' : 'اختر فرعك وحلقتك ليراجع الشيخ المسؤول طلبك.') : 'سجل دخولك لمتابعة رحلتك مع الدار.'}</p>{success &&
+                    <div className="success-banner">{success}</div>}
+                <form onSubmit={submit}>{mode !== 'login' && <label>الاسم كاملًا<input required value={v.name || ''}
+                                                                                       onChange={e => setV({
+                                                                                           ...v,
+                                                                                           name: e.target.value
+                                                                                       })}/></label>}{mode === 'register' && <>
+                    <label>اسم المستخدم<input required dir="ltr" autoComplete="username"
+                                              pattern="[a-zA-Z][a-zA-Z0-9_.\-]{3,31}" maxLength={32}
+                                              placeholder="ahmed.yasser" value={v.username || ''} onChange={e => setV({
+                        ...v,
+                        username: e.target.value.toLowerCase()
+                    })}/><small>من 4 إلى 32 حرفًا إنجليزيًا أو رقمًا، ويبدأ بحرف. يُستخدم للدخول للحساب.</small></label><label
+                    className="portrait-picker">الصورة الشخصية بخلفية بيضاء
+                    <div className="portrait-preview">{v.photo ? <img src={v.photo} alt="معاينة الصورة الشخصية"/> :
+                        <UserRound size={32}/>}</div>
+                    <input type="file" required accept="image/jpeg,image/png,image/webp" onChange={async e => {
+                        const f = e.target.files?.[0];
+                        setV((x: any) => ({...x, photo: ''}));
+                        if (!f) return;
+                        if (f.size > 2 * 1024 * 1024 || !['image/jpeg', 'image/png', 'image/webp'].includes(f.type)) {
+                            setErr('اختر صورة JPG أو PNG أو WebP بحجم لا يتجاوز 2 ميجابايت');
+                            e.target.value = '';
+                            return;
+                        }
+                        const data = await new Promise<string>((resolve, reject) => {
+                            const r = new FileReader();
+                            r.onload = () => resolve(String(r.result));
+                            r.onerror = reject;
+                            r.readAsDataURL(f);
+                        });
+                        const picture = new Image();
+                        picture.onload = () => {
+                            setV((x: any) => ({...x, photo: data}));
+                            setErr('');
+                        };
+                        picture.onerror = () => setErr('الصورة غير صالحة، اختر صورة أخرى');
+                        picture.src = data;
+                    }}/><small>ارفع صورة جاهزة بخلفية بيضاء، حتى 2 ميجابايت. لن تظهر
+                        للعامة.</small></label></>}<label>{mode === 'login' ? 'اسم المستخدم أو رقم الهاتف' : 'رقم الهاتف'}<input
+                    type={mode === 'login' ? 'text' : 'tel'} autoComplete={mode === 'login' ? 'username' : 'tel'}
+                    dir="ltr" required value={v.phone || ''} onChange={e => {
+                    setV({...v, phone: e.target.value, phone_token: ''});
+                    setSent(false);
+                    setCode('');
+                }}/></label>{mode === 'register' && (otpEnabled ? <div className="phone-verify">{v.phone_token ?
+                        <p className="success-banner">تم تأكيد رقم الهاتف ✓</p> : <><small>أكد رقمك
+                            برسالة {channel === 'whatsapp' ? 'واتساب' : 'SMS'}. يمكن استخدام الرقم نفسه لحسابات
+                            مختلفة.</small>
+                            <button className="secondary" type="button" disabled={busy || cooldown > 0 || !v.phone}
+                                    onClick={() => verify()}>{cooldown ? `إعادة الإرسال بعد ${cooldown} ثانية` : sent ? 'إعادة إرسال الكود' : 'إرسال كود التأكيد'}</button>
+                            {sent && <><label>كود التأكيد<input inputMode="numeric" autoComplete="one-time-code" dir="ltr"
+                                                                maxLength={10} value={code}
+                                                                onChange={e => setCode(e.target.value.replace(/[^0-9]/g, ''))}/></label>
+                                <button className="secondary" type="button" disabled={busy || code.length < 4}
+                                        onClick={() => verify(true)}>تأكيد الرقم
+                                </button>
+                            </>}</>}</div> :
+                    <small className="inline-note">استخدام رقم واحد لأكثر من حساب سيتاح عند تفعيل تأكيد
+                        الهاتف.</small>)}{mode === 'register' && <>{!portal &&
+                    <label>نوع الحساب<Choice value={v.role} onChange={role => setV({...v, role})}
+                                             options={['student', 'parent', 'sheikh', 'assistant'].map(r => ({
+                                                 value: r,
+                                                 label: roleNames[r]
+                                             }))}/></label>}{['student', 'parent', 'assistant'].includes(v.role) && <>
+                    <label>الفرع<Choice value={v.branch} onChange={branch => setV({...v, branch, circle_id: ''})}
+                                        options={Array.from(new Set(options.map(c => c.branch))).map(b => ({
+                                            value: b,
+                                            label: b
+                                        }))} placeholder="اختر الفرع"/></label><label>الحلقة<Choice value={v.circle_id}
+                                                                                                    onChange={circle_id => setV({
+                                                                                                        ...v,
+                                                                                                        circle_id
+                                                                                                    })}
+                                                                                                    options={options.filter(c => c.branch === v.branch).map(c => ({
+                                                                                                        value: c.id,
+                                                                                                        label: c.name
+                                                                                                    }))}
+                                                                                                    placeholder="اختر الحلقة"/></label>{optionsError ?
+                    <p role="alert">{optionsError}
+                        <button type="button" onClick={loadOptions}>إعادة المحاولة</button>
+                    </p> : !options.length ? <p>لا توجد حلقات متاحة للتسجيل حاليًا؛ تواصل مع
+                        الإدارة.</p> : null}{v.circle_id && !options.find(c => c.id === v.circle_id)?.has_teacher &&
+                    <small>لم يُسند شيخ لهذه الحلقة بعد؛ ستراجع الإدارة طلبك.</small>}{v.role === 'parent' &&
+                    <label>اسم الابن كاملًا<input required value={v.child_name || ''} onChange={e => setV({
+                        ...v,
+                        child_name: e.target.value
+                    })}/></label>}</>}<label>ملاحظات تساعد على مطابقة الحساب (اختياري)<input
+                    value={v.verification || ''}
+                    onChange={e => setV({...v, verification: e.target.value})}/></label>{v.role === 'student' && <>
+                    <label>تاريخ الميلاد<input type="date" value={v.birthdate || ''}
+                                               onChange={e => setV({...v, birthdate: e.target.value})}/></label><label>اسم
+                    ولي الأمر<input value={v.guardian_name || ''}
+                                    onChange={e => setV({...v, guardian_name: e.target.value})}/></label><label>هاتف ولي
+                    الأمر<input type="tel" value={v.guardian_phone || ''}
+                                onChange={e => setV({...v, guardian_phone: e.target.value})}/></label></>}</>}<label>كلمة
+                    المرور<input type="password" minLength={8}
+                                 autoComplete={mode === 'login' ? 'current-password' : 'new-password'} required
+                                 value={v.password || ''}
+                                 onChange={e => setV({...v, password: e.target.value})}/></label>{mode !== 'login' &&
+                    <label>تأكيد كلمة المرور<input type="password" minLength={8} autoComplete="new-password" required
+                                                   value={v.confirm || ''} onChange={e => setV({
+                        ...v,
+                        confirm: e.target.value
+                    })}/></label>}{err && <p className="form-error" role="alert">{err}</p>}
+                    <button className="primary"
+                            disabled={busy || mode === 'register' && (!v.photo || otpEnabled && !v.phone_token) || mode === 'setup' && !state.canSetup || mode === 'register' && ['student', 'parent', 'assistant'].includes(v.role) && (!v.circle_id || !v.branch || !!optionsError)}>{busy ?
+                        <LoaderCircle size={17}
+                                      className="animate-spin"/> : null}{mode === 'setup' ? 'إنشاء حساب الإدارة' : mode === 'register' ? 'إرسال طلب التسجيل' : 'تسجيل الدخول'}<ArrowUpLeft
+                        size={18}/></button>
+                    {mode === 'setup' && !state.canSetup &&
+                        <p>لم تُجهّز الإدارة بعد. على مسؤول السيرفر تشغيل أمر إنشاء حساب الإدارة.</p>}</form>
+                {!state.setup && portal !== 'admin' && <button className="auth-toggle" onClick={() => {
+                    setMode(mode === 'login' ? 'register' : 'login');
+                    setErr('');
+                    setSent(false);
+                    setCode('');
+                    setV({...v, photo: '', phone_token: ''});
+                }}>{mode === 'login' ? 'ليس لديك حساب؟ اطلب الانضمام' : 'لديك حساب؟ سجل الدخول'}</button>}<a
+                    className="auth-toggle" href="/portals">بوابة الشيخ · المساعد · الطالب · ولي الأمر ·
+                    الإدارة</a><small className="auth-help">نسيت كلمة المرور؟ تواصل مع إدارة الدار لإعادة
+                    تعيينها.</small></section>
+        </div>
+        <SiteFooter/></div>;
+}
+
+function SettingsPanel({state, refresh, run}: any) {
+    const [v, setV] = useState(JSON.parse(state.settings)), [busy, setBusy] = useState(false), [password, setPassword] = useState('');
+
+    async function backup() {
+        if (password.length < 10) {
+            toast.error('اكتب عبارة حماية للنسخة من 10 أحرف على الأقل');
+            return;
+        }
+        setBusy(true);
+        try {
+            const r = await fetch(api + '?action=backup');
+            const data: any = await r.json();
+            if (!r.ok) throw new Error(data.error);
+            const salt = crypto.getRandomValues(new Uint8Array(16)), iv = crypto.getRandomValues(new Uint8Array(12));
+            const e = new TextEncoder();
+            const base = await crypto.subtle.importKey('raw', e.encode(password), 'PBKDF2', false, ['deriveKey']);
+            const key = await crypto.subtle.deriveKey({
+                name: 'PBKDF2',
+                salt,
+                iterations: 200000,
+                hash: 'SHA-256'
+            }, base, {name: 'AES-GCM', length: 256}, false, ['encrypt']);
+            const cipher = await crypto.subtle.encrypt({name: 'AES-GCM', iv}, key, e.encode(JSON.stringify(data)));
+            const b64 = (a: Uint8Array) => btoa(Array.from(a, x => String.fromCharCode(x)).join(''));
+            const blob = new Blob([JSON.stringify({
+                format: 'dar-backup-v1',
+                salt: b64(salt),
+                iv: b64(iv),
+                cipher: b64(new Uint8Array(cipher))
+            })], {type: 'application/json'});
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `dar-backup-${today()}.encrypted.json`;
+            a.click();
+            URL.revokeObjectURL(url);
+            toast.success('تم تنزيل نسخة مشفرة من قاعدة البيانات');
+        } catch (e: any) {
+            toast.error(e.message);
+        } finally {
+            setBusy(false);
+        }
+    }
+
+    async function restore(file: File) {
+        if (password.length < 10) {
+            toast.error('اكتب عبارة حماية النسخة أولًا');
+            return;
+        }
+        if (!window.confirm('سيتم استرجاع السجلات المفقودة فقط، مع الحفاظ على السجلات الحالية. متابعة؟')) return;
+        setBusy(true);
+        try {
+            const b = JSON.parse(await file.text());
+            if (b.format !== 'dar-backup-v1') throw new Error('نسخة غير صالحة');
+            const bytes = (s: string) => Uint8Array.from(atob(s), c => c.charCodeAt(0));
+            const base = await crypto.subtle.importKey('raw', new TextEncoder().encode(password), 'PBKDF2', false, ['deriveKey']);
+            const key = await crypto.subtle.deriveKey({
+                name: 'PBKDF2',
+                salt: bytes(b.salt),
+                iterations: 200000,
+                hash: 'SHA-256'
+            }, base, {name: 'AES-GCM', length: 256}, false, ['decrypt']);
+            const plain = await crypto.subtle.decrypt({name: 'AES-GCM', iv: bytes(b.iv)}, key, bytes(b.cipher));
+            await call('restore', {snapshot: JSON.parse(new TextDecoder().decode(plain))});
+            await refresh();
+            toast.success('تم استرجاع السجلات المفقودة');
+        } catch (e: any) {
+            toast.error(e.name === 'OperationError' ? 'عبارة الحماية غير صحيحة أو النسخة تالفة' : e.message);
+        } finally {
+            setBusy(false);
+        }
+    }
+
+    return <div className="settings-grid">
+        <section className="panel padded"><h2>بيانات الدار</h2>
+            <form onSubmit={async e => {
+                e.preventDefault();
+                await run('settings', v);
+            }}><label>رقم التواصل<input value={v.contact || ''} onChange={e => setV({...v, contact: e.target.value})}/></label><label>العنوان<input
+                value={v.address || ''} onChange={e => setV({...v, address: e.target.value})}/></label><label>فترة
+                السماح للاشتراك بالأيام<input type="number" min="0" value={v.overdue_days || 0} onChange={e => setV({
+                    ...v,
+                    overdue_days: Number(e.target.value)
+                })}/></label><label className="switch-label"><span>تقييد خطة الحفظ عند تجاوز فترة السماح</span><Switch
+                checked={!!v.restrict_access} onCheckedChange={c => setV({...v, restrict_access: c})}/></label><label
+                className="switch-label"><span>تفعيل مواعيد رمضان</span><Switch checked={!!v.ramadan}
+                                                                                onCheckedChange={c => setV({
+                                                                                    ...v,
+                                                                                    ramadan: c
+                                                                                })}/></label>
+                <button className="primary">حفظ الإعدادات</button>
+            </form>
+        </section>
+        <section className="panel padded"><h2>نسخة احتياطية مشفرة</h2><p>تضم الحسابات والسجلات والعلاقات. ملفات
+            الإيصالات محفوظة منفصلة. احتفظ بعبارة الحماية في مكان آمن.</p><label>عبارة حماية النسخة<input
+            type="password" minLength={10} value={password} onChange={e => setPassword(e.target.value)}/></label>
+            <button className="secondary" onClick={backup} disabled={busy}><Download size={17}/> تنزيل النسخة</button>
+            <label className="mt-5">استرجاع السجلات المفقودة<input type="file" accept="application/json" disabled={busy}
+                                                                   onChange={e => {
+                                                                       const f = e.target.files?.[0];
+                                                                       if (f) restore(f);
+                                                                   }}/></label><small>تسترجع حتى 5000 سجل في العملية
+                الواحدة دون استبدال البيانات الحالية.</small></section>
+    </div>;
+}
+
+function RegistrationRequests({requests, students, circles, refresh}: any) {
+    const [selected, setSelected] = useState<any>(null), [v, setV] = useState<any>({}), [busy, setBusy] = useState(false), [error, setError] = useState('');
+
+    async function submit(e: any) {
+        e.preventDefault();
+        setBusy(true);
+        setError('');
+        try {
+            await call('review_registration', {...v, id: selected.id});
+            await refresh();
+            setSelected(null);
+            toast.success(v.decision === 'approved' ? 'تم تفعيل الحساب وربط بياناته' : 'تم رفض الطلب');
+        } catch (e: any) {
+            setError(e.message);
+        } finally {
+            setBusy(false);
+        }
+    }
+
+    return <section className="panel padded"><h2>طلبات الانضمام للحلقات</h2><p>راجع بيانات مقدم الطلب والحلقة. طلبات
+        المساعدين تعتمدها الإدارة وتربطهم بالحَلقة مباشرة.</p>{!requests.length ?
+        <Empty title="لا توجد طلبات تسجيل" text="تظهر هنا طلبات الانضمام المتاحة لك للمراجعة."/> :
+        <Table><TableHeader><TableRow><TableHead>مقدم الطلب</TableHead><TableHead>الطالب</TableHead><TableHead>الفرع
+            والحلقة</TableHead><TableHead>الحالة</TableHead><TableHead>المراجعة</TableHead></TableRow></TableHeader><TableBody>{requests.map((r: any) =>
+            <TableRow
+                key={r.id}><TableCell><strong>{r.name}</strong><small>{roleNames[r.role]} · {r.phone}</small></TableCell><TableCell>{r.data.child_name}<small>{r.data.verification}</small></TableCell><TableCell>{r.data.branch}<small>{circles.find((c: any) => c.id === r.circle_id)?.name || 'حلقة مؤرشفة'}</small></TableCell><TableCell><Badge
+                value={r.status}/>{r.status === 'pending' && r.account_status !== 'pending' &&
+                <small>عالجت الإدارة الحساب بالفعل</small>}
+            </TableCell><TableCell>{r.status === 'pending' && r.account_status === 'pending' ?
+                <button className="secondary" onClick={() => {
+                    setSelected(r);
+                    setV({decision: 'approved', verified: false});
+                    setError('');
+                }}>مراجعة الطلب</button> :
+                <small>{r.data.reason || 'تمت المعالجة'}</small>}</TableCell></TableRow>)}</TableBody></Table>}
+        <Dialog open={!!selected} onOpenChange={o => {
+            if (!o && !busy) setSelected(null);
+        }}><DialogContent dir="rtl"><DialogHeader><DialogTitle>مراجعة
+            طلب {selected?.name}</DialogTitle><DialogDescription>{selected?.role === 'assistant' ? 'المساعد' : 'الطالب'}: {selected?.data.child_name} ·
+            الهاتف: {selected?.phone}</DialogDescription></DialogHeader>
+            <form onSubmit={submit}>{selected?.photo_id &&
+                <div className="portrait-preview"><img src={api + '?action=avatar&id=' + selected.user_id}
+                                                       alt="صورة مقدم الطلب"/></div>}<label>القرار<Choice
+                value={v.decision} onChange={decision => setV({...v, decision})}
+                options={[{value: 'approved', label: 'الموافقة وربط الحساب'}, {
+                    value: 'rejected',
+                    label: 'رفض الطلب'
+                }]}/></label>{v.decision === 'approved' && selected?.role === 'assistant' &&
+                <p className="inline-note">الموافقة تفعّل حساب المساعد وتربطه بالحَلقة المطلوبة. تحدد الإدارة أجره من
+                    الفريق والمرتبات.</p>}{v.decision === 'approved' && <>{selected?.role === 'student' &&
+                <label className="switch-label"><span>إنشاء ملف جديد إذا لم يكن الطالب مسجلًا</span><Checkbox
+                    checked={!!v.new_profile} onCheckedChange={new_profile => setV({
+                    ...v,
+                    new_profile,
+                    student_id: ''
+                })}/></label>}{selected?.role !== 'assistant' && !v.new_profile &&
+                <label>ملف الطالب في هذه الحلقة<Choice value={v.student_id}
+                                                       onChange={student_id => setV({...v, student_id})}
+                                                       options={students.filter((s: any) => s.circle_id === selected?.circle_id && s.status === 'active').map((s: any) => ({
+                                                           value: s.id,
+                                                           label: s.name + ' · ' + (s.details?.guardian_name || s.phone || s.id.slice(0, 8))
+                                                       }))}/></label>}{selected?.role === 'parent' && !students.some((s: any) => s.circle_id === selected.circle_id && s.status === 'active') &&
+                <p>لا يوجد ملف طالب نشط هنا. اطلب من الإدارة إضافة ملف الابن أولًا، ثم راجع الطلب.</p>}<label
+                className="switch-label"><span>تحققت من هوية صاحب الحساب وصحة الحلقة المطلوبة</span><Checkbox
+                checked={!!v.verified}
+                onCheckedChange={verified => setV({...v, verified: verified === true})}/></label></>}<label>ملاحظات
+                القرار<textarea value={v.reason || ''}
+                                onChange={e => setV({...v, reason: e.target.value})}/></label>{error &&
+                <p className="form-error" role="alert">{error}</p>}
+                <button className="primary"
+                        disabled={busy || v.decision === 'approved' && (!v.verified || selected?.role !== 'assistant' && !v.new_profile && !v.student_id)}>{busy ? 'جارٍ الحفظ…' : 'تأكيد القرار'}</button>
+            </form>
+        </DialogContent></Dialog></section>;
 }

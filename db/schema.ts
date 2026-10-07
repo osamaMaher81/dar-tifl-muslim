@@ -1,15 +1,93 @@
-import { sql } from 'drizzle-orm';
-import { sqliteTable, text, integer, real, index, uniqueIndex } from 'drizzle-orm/sqlite-core';
-export const users = sqliteTable('users', {id:text('id').primaryKey(),name:text('name').notNull(),phone:text('phone').notNull(),password:text('password').notNull(),role:text('role').notNull(),status:text('status').notNull(),platformId:text('platform_id'),details:text('details').notNull().default('{}'),created:text('created').notNull()});
-export const sessions=sqliteTable('sessions',{id:text('id').primaryKey(),userId:text('user_id').notNull().references(()=>users.id),expires:integer('expires').notNull()});
-export const attempts=sqliteTable('attempts',{id:text('id').primaryKey(),count:integer('count').notNull(),expires:integer('expires').notNull()});
-export const circles=sqliteTable('circles',{id:text('id').primaryKey(),name:text('name').notNull(),level:text('level').notNull(),type:text('type').notNull(),schedule:text('schedule').notNull(),capacity:integer('capacity').notNull(),status:text('status').notNull(),details:text('details').notNull().default('{}'),created:text('created').notNull()});
-export const assignments=sqliteTable('assignments',{id:text('id').primaryKey(),circleId:text('circle_id').notNull().references(()=>circles.id),userId:text('user_id').notNull().references(()=>users.id)},t=>[uniqueIndex('assignment_unique').on(t.circleId,t.userId)]);
-export const students=sqliteTable('students',{id:text('id').primaryKey(),name:text('name').notNull(),phone:text('phone'),circleId:text('circle_id').references(()=>circles.id),level:text('level').notNull(),status:text('status').notNull(),details:text('details').notNull().default('{}'),created:text('created').notNull()});
-export const links=sqliteTable('links',{id:text('id').primaryKey(),userId:text('user_id').notNull().references(()=>users.id),studentId:text('student_id').notNull().references(()=>students.id)},t=>[uniqueIndex('link_unique').on(t.userId,t.studentId)]);
-export const records=sqliteTable('records',{id:text('id').primaryKey(),kind:text('kind').notNull(),studentId:text('student_id').references(()=>students.id),circleId:text('circle_id').references(()=>circles.id),userId:text('user_id').references(()=>users.id),actorId:text('actor_id').notNull().references(()=>users.id),parentId:text('parent_id'),date:text('date').notNull(),status:text('status').notNull(),amount:integer('amount').notNull().default(0),data:text('data').notNull(),created:text('created').notNull()},t=>[index('records_student').on(t.studentId,t.kind),index('records_user').on(t.userId,t.kind),index('records_date').on(t.kind,t.date),uniqueIndex('one_attendance_day').on(t.studentId,t.date).where(sql`${t.kind}='attendance' AND ${t.status}!='void'`),uniqueIndex('one_monthly_salary').on(t.userId,t.date).where(sql`${t.kind}='salary'`),uniqueIndex('one_open_staff_session').on(t.userId).where(sql`${t.kind}='staff_attendance' AND ${t.status}='open'`)]);
-export const audit=sqliteTable('audit',{id:text('id').primaryKey(),actorId:text('actor_id').notNull().references(()=>users.id),action:text('action').notNull(),entity:text('entity').notNull(),before:text('before_value'),after:text('after_value'),created:text('created').notNull()});
-export const files=sqliteTable('files',{id:text('id').primaryKey(),ownerId:text('owner_id').notNull().references(()=>users.id),name:text('name').notNull(),type:text('type').notNull(),created:text('created').notNull()});
-export const settings=sqliteTable('settings',{id:text('id').primaryKey(),value:text('value').notNull()});
+import {sql} from 'drizzle-orm';
+import {index, integer, sqliteTable, text, uniqueIndex} from 'drizzle-orm/sqlite-core';
 
-export const phoneTokens=sqliteTable('phone_tokens',{id:text('id').primaryKey(),phone:text('phone').notNull(),expires:integer('expires').notNull(),accountId:text('account_id').notNull()});
+export const users = sqliteTable('users', {
+    id: text('id').primaryKey(),
+    name: text('name').notNull(),
+    phone: text('phone').notNull(),
+    password: text('password').notNull(),
+    role: text('role').notNull(),
+    status: text('status').notNull(),
+    platformId: text('platform_id'),
+    details: text('details').notNull().default('{}'),
+    created: text('created').notNull()
+});
+export const sessions = sqliteTable('sessions', {
+    id: text('id').primaryKey(),
+    userId: text('user_id').notNull().references(() => users.id),
+    expires: integer('expires').notNull()
+});
+export const attempts = sqliteTable('attempts', {
+    id: text('id').primaryKey(),
+    count: integer('count').notNull(),
+    expires: integer('expires').notNull()
+});
+export const circles = sqliteTable('circles', {
+    id: text('id').primaryKey(),
+    name: text('name').notNull(),
+    level: text('level').notNull(),
+    type: text('type').notNull(),
+    schedule: text('schedule').notNull(),
+    capacity: integer('capacity').notNull(),
+    status: text('status').notNull(),
+    details: text('details').notNull().default('{}'),
+    created: text('created').notNull()
+});
+export const assignments = sqliteTable('assignments', {
+    id: text('id').primaryKey(),
+    circleId: text('circle_id').notNull().references(() => circles.id),
+    userId: text('user_id').notNull().references(() => users.id)
+}, t => [uniqueIndex('assignment_unique').on(t.circleId, t.userId)]);
+export const students = sqliteTable('students', {
+    id: text('id').primaryKey(),
+    name: text('name').notNull(),
+    phone: text('phone'),
+    circleId: text('circle_id').references(() => circles.id),
+    level: text('level').notNull(),
+    status: text('status').notNull(),
+    details: text('details').notNull().default('{}'),
+    created: text('created').notNull()
+});
+export const links = sqliteTable('links', {
+    id: text('id').primaryKey(),
+    userId: text('user_id').notNull().references(() => users.id),
+    studentId: text('student_id').notNull().references(() => students.id)
+}, t => [uniqueIndex('link_unique').on(t.userId, t.studentId)]);
+export const records = sqliteTable('records', {
+    id: text('id').primaryKey(),
+    kind: text('kind').notNull(),
+    studentId: text('student_id').references(() => students.id),
+    circleId: text('circle_id').references(() => circles.id),
+    userId: text('user_id').references(() => users.id),
+    actorId: text('actor_id').notNull().references(() => users.id),
+    parentId: text('parent_id'),
+    date: text('date').notNull(),
+    status: text('status').notNull(),
+    amount: integer('amount').notNull().default(0),
+    data: text('data').notNull(),
+    created: text('created').notNull()
+}, t => [index('records_student').on(t.studentId, t.kind), index('records_user').on(t.userId, t.kind), index('records_date').on(t.kind, t.date), uniqueIndex('one_attendance_day').on(t.studentId, t.date).where(sql`${t.kind}='attendance' AND ${t.status}!='void'`), uniqueIndex('one_monthly_salary').on(t.userId, t.date).where(sql`${t.kind}='salary'`), uniqueIndex('one_open_staff_session').on(t.userId).where(sql`${t.kind}='staff_attendance' AND ${t.status}='open'`)]);
+export const audit = sqliteTable('audit', {
+    id: text('id').primaryKey(),
+    actorId: text('actor_id').notNull().references(() => users.id),
+    action: text('action').notNull(),
+    entity: text('entity').notNull(),
+    before: text('before_value'),
+    after: text('after_value'),
+    created: text('created').notNull()
+});
+export const files = sqliteTable('files', {
+    id: text('id').primaryKey(),
+    ownerId: text('owner_id').notNull().references(() => users.id),
+    name: text('name').notNull(),
+    type: text('type').notNull(),
+    created: text('created').notNull()
+});
+export const settings = sqliteTable('settings', {id: text('id').primaryKey(), value: text('value').notNull()});
+
+export const phoneTokens = sqliteTable('phone_tokens', {
+    id: text('id').primaryKey(),
+    phone: text('phone').notNull(),
+    expires: integer('expires').notNull(),
+    accountId: text('account_id').notNull()
+});

@@ -1,4 +1,43 @@
-import {DarSignature,SiteFooter} from '../brand-design';
-import {GraduationCap,BookOpen,HeartHandshake,ShieldCheck,ArrowUpLeft} from 'lucide-react';
-const portals=[{id:'assistant',title:'بوابة المساعد',text:'متابعة الحلقة، الحضور والغياب، والمستحقات بعد موافقة الإدارة.',Icon:GraduationCap},{id:'sheikh',title:'بوابة الشيخ',text:'حلقاتي وطلابي، الحضور، تسجيل التسميع والمراجعة، والمستحقات.',Icon:GraduationCap},{id:'student',title:'بوابة الطالب',text:'المطلوب للحلقة القادمة، خطة الحفظ، التقييمات وسجل الإنجاز.',Icon:BookOpen},{id:'parent',title:'بوابة ولي الأمر',text:'متابعة كل ابن على حدة: الحفظ، الحضور، ملاحظات الشيخ والاشتراك.',Icon:HeartHandshake},{id:'admin',title:'بوابة الإدارة',text:'مراجعة الحسابات وربط الطلاب وأولياء الأمور والمشايخ بالحلقات.',Icon:ShieldCheck}];
-export default function Portals(){return <div className="portal-directory"><header className="auth-header"><a className="brand" href="/"><img src="/logo.jpg" alt="دار الطفل المسلم"/><div><strong>دار الطفل المسلم</strong><small>لنشأة جيل أفضل</small></div></a><a href="/about">عن الدار</a></header><main><h1>أهلًا بك في دار الطفل المسلم</h1><p className="auth-quote">فاز من اتخذ القرآن صاحبًا</p><p>اختر بوابتك للمتابعة</p><div className="portal-grid">{portals.map(({id,title,text,Icon})=><a className={`portal-card portal-${id}`} href={`/${id}`} key={id}><span className="portal-symbol"><Icon size={32}/></span><h2>{title}</h2><p>{text}</p><span className="text-btn">دخول البوابة <ArrowUpLeft size={18}/></span></a>)}</div></main><SiteFooter/></div>;}
+import {SiteFooter} from '../brand-design';
+import {ArrowUpLeft, BookOpen, GraduationCap, HeartHandshake, ShieldCheck} from 'lucide-react';
+
+const portals = [{
+    id: 'assistant',
+    title: 'بوابة المساعد',
+    text: 'متابعة الحلقة، الحضور والغياب، والمستحقات بعد موافقة الإدارة.',
+    Icon: GraduationCap
+}, {
+    id: 'sheikh',
+    title: 'بوابة الشيخ',
+    text: 'حلقاتي وطلابي، الحضور، تسجيل التسميع والمراجعة، والمستحقات.',
+    Icon: GraduationCap
+}, {
+    id: 'student',
+    title: 'بوابة الطالب',
+    text: 'المطلوب للحلقة القادمة، خطة الحفظ، التقييمات وسجل الإنجاز.',
+    Icon: BookOpen
+}, {
+    id: 'parent',
+    title: 'بوابة ولي الأمر',
+    text: 'متابعة كل ابن على حدة: الحفظ، الحضور، ملاحظات الشيخ والاشتراك.',
+    Icon: HeartHandshake
+}, {
+    id: 'admin',
+    title: 'بوابة الإدارة',
+    text: 'مراجعة الحسابات وربط الطلاب وأولياء الأمور والمشايخ بالحلقات.',
+    Icon: ShieldCheck
+}];
+export default function Portals() {
+    return <div className="portal-directory">
+        <header className="auth-header"><a className="brand" href="/"><img src="/logo.jpg" alt="دار الطفل المسلم"/>
+            <div><strong>دار الطفل المسلم</strong><small>لنشأة جيل أفضل</small></div>
+        </a><a href="/about">عن الدار</a></header>
+        <main><h1>أهلًا بك في دار الطفل المسلم</h1><p className="auth-quote">فاز من اتخذ القرآن صاحبًا</p><p>اختر بوابتك
+            للمتابعة</p>
+            <div className="portal-grid">{portals.map(({id, title, text, Icon}) => <a
+                className={`portal-card portal-${id}`} href={`/${id}`} key={id}><span className="portal-symbol"><Icon
+                size={32}/></span><h2>{title}</h2><p>{text}</p><span className="text-btn">دخول البوابة <ArrowUpLeft
+                size={18}/></span></a>)}</div>
+        </main>
+        <SiteFooter/></div>;
+}

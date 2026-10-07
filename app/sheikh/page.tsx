@@ -1,2 +1,5 @@
 import Academy from '../academy';
-export default function Page(){return <Academy portal="sheikh"/>;}
+
+export default function Page() {
+    return <Academy portal="sheikh"/>;
+}

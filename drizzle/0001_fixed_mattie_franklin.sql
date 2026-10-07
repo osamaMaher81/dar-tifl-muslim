@@ -1,3 +1,3 @@
-CREATE UNIQUE INDEX `one_attendance_day` ON `records` (`student_id`,`date`) WHERE "records"."kind"='attendance' AND "records"."status"!='void';--> statement-breakpoint
-CREATE UNIQUE INDEX `one_monthly_salary` ON `records` (`user_id`,`date`) WHERE "records"."kind"='salary';--> statement-breakpoint
+CREATE UNIQUE INDEX `one_attendance_day` ON `records` (`student_id`, `date`) WHERE "records"."kind"='attendance' AND "records"."status"!='void';--> statement-breakpoint
+CREATE UNIQUE INDEX `one_monthly_salary` ON `records` (`user_id`, `date`) WHERE "records"."kind"='salary';--> statement-breakpoint
 CREATE UNIQUE INDEX `one_open_staff_session` ON `records` (`user_id`) WHERE "records"."kind"='staff_attendance' AND "records"."status"='open';
